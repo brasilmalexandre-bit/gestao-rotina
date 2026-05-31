@@ -240,6 +240,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="nav-tab active" onclick="showPage('tasks',this)">Tarefas</button>
   <button class="nav-tab" onclick="showPage('agenda',this)">Agenda</button>
   <span id="saved-msg" class="nav-right">salvo ✓</span>
+  <div style="display:flex;gap:6px;margin-left:8px">
+    <button onclick="exportData()" style="height:28px;padding:0 10px;border:0.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer" title="Exportar dados">⬇ Export</button>
+    <label style="height:28px;padding:0 10px;border:0.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer;display:flex;align-items:center" title="Importar dados">⬆ Import<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/></label>
+  </div>
 </nav>
 
 <!-- ══ TAREFAS ══ -->
@@ -708,6 +712,40 @@ function showPage(p,btn){
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
   if(p==='agenda')renderCal();
+}
+
+// ── EXPORT / IMPORT ──
+function exportData(){
+  const data={tasks,events};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='painel-alexandre-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(ev){
+  const file=ev.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.tasks&&!data.events){alert('Arquivo inválido.');return;}
+      if(!confirm('Isso vai substituir todas as tarefas e eventos atuais. Continuar?'))return;
+      if(data.tasks)tasks=data.tasks;
+      if(data.events)events=data.events;
+      saveAll();
+      renderTasks();
+      renderCal();
+      if(selectedDate)renderDayPanel(selectedDate);
+      alert('Dados importados com sucesso!');
+    }catch(err){alert('Erro ao ler o arquivo.');}
+    ev.target.value='';
+  };
+  reader.readAsText(file);
 }
 
 // ── SEED (planilha eventos) ──
