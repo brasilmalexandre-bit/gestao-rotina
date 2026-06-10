@@ -314,6 +314,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="modal" onclick="event.stopPropagation()">
     <h3 id="ev-modal-title">Novo evento</h3>
     <div class="mfield"><label>Descricao</label><input type="text" id="ev-text" placeholder="Ex: Reuniao Tirolez"/></div>
+    <div class="mfield"><label>Observacao</label><input type="text" id="ev-obs" placeholder="Detalhes, pauta, contato..."/></div>
     <div class="mrow">
       <div class="mfield"><label>Data</label><input type="date" id="ev-date"/></div>
       <div class="mfield"><label>Periodo</label>
@@ -522,7 +523,7 @@ function showPage(p,btn){
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
-  if(p==='agenda')renderCal();
+  if(p==='agenda'){renderCal();renderAgendaObs();}
 }
 
 // AGENDA HELPERS
@@ -545,6 +546,7 @@ function resetEventModal(){
   document.getElementById('ev-time-field').style.display='none';
   document.getElementById('ev-time').value='08:00';
   document.getElementById('ev-time-end').value='09:00';
+  document.getElementById('ev-obs').value='';
   document.getElementById('ev-location').value='';
   document.getElementById('ev-recur').value='none';
   document.getElementById('ev-recur-end').value='';
@@ -583,6 +585,7 @@ function openEditEvent(id){
   document.getElementById('ev-time').value=e.time||'08:00';
   document.getElementById('ev-time-end').value=e.timeEnd||'09:00';
   document.getElementById('ev-time-field').style.display=e.period==='H'?'grid':'none';
+  document.getElementById('ev-obs').value=e.obs||'';
   document.getElementById('ev-location').value=e.location||'';
   document.getElementById('ev-del-btn').style.display='inline-flex';
   document.getElementById('modal-event').style.display='flex';
@@ -595,6 +598,7 @@ function saveEvent(){
   const period=document.getElementById('ev-period').value;
   const timeStart=period==='H'?document.getElementById('ev-time').value:'';
   const timeEnd=period==='H'?document.getElementById('ev-time-end').value:'';
+  const obs=document.getElementById('ev-obs').value.trim();
   const location=document.getElementById('ev-location').value.trim();
   const recur=document.getElementById('ev-recur').value;
   const recurEnd=document.getElementById('ev-recur-end').value;
@@ -606,9 +610,9 @@ function saveEvent(){
   }
   if(editEventId){
     const e=events.find(x=>x.id===editEventId);
-    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;}
+    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;}
   } else {
-    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,recurGroup:null};
+    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,recurGroup:null};
     if(recur==='none'||!recurEnd){
       events.push(baseEv);
     } else {
@@ -618,7 +622,7 @@ function saveEvent(){
     }
   }
   document.getElementById('modal-event').style.display='none';
-  saveAll();renderCal();
+  saveAll();renderCal();renderAgendaObs();
   selectedDate=date;renderDayPanel(date);
 }
 
@@ -697,6 +701,7 @@ function renderDayPanel(ds){
         return '<div class="dp-ev">'+
           '<span class="dp-period '+f+'">'+pl+'</span>'+
           '<span class="dp-text">'+esc(e.text)+' '+timeBadge+locBadge+recurBadge+'</span>'+
+          (e.obs?'<div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4">'+esc(e.obs)+'</div>':'')+
           '<div class="dp-actions">'+
             '<button class="dp-btn edit" onclick="openEditEvent('+e.id+')" title="Editar">&#9998;</button>'+
             '<button class="dp-btn" onclick="removeEvent('+e.id+')" title="Excluir">&#10005;</button>'+
@@ -786,6 +791,33 @@ function renderDayPanel(ds){
   localStorage.setItem(EVENT_KEY,JSON.stringify(existing));
   localStorage.setItem(SK,'1');
 })();
+
+// AGENDA OBS: show today's events with observations at top of agenda
+function renderAgendaObs(){
+  const td=todayStr();
+  const todayEvs=eventsForDate(td).filter(e=>e.obs);
+  const panel=document.getElementById('agenda-obs-panel');
+  if(!todayEvs.length){if(panel)panel.style.display='none';return;}
+  if(!panel){
+    const p=document.createElement('div');
+    p.id='agenda-obs-panel';
+    p.style.cssText='background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:1.25rem';
+    const agendaTop=document.querySelector('#page-agenda .agenda-top');
+    if(agendaTop)agendaTop.insertAdjacentElement('afterend',p);
+  }
+  const el=document.getElementById('agenda-obs-panel');
+  if(!el)return;
+  el.style.display='block';
+  el.innerHTML='<div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Obs. de hoje</div>'+
+    todayEvs.map(e=>{
+      const f=periodClass(e);
+      return '<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid var(--border)">'+
+        '<span class="day-event '+f+'" style="flex-shrink:0;margin-top:2px">'+periodLabel(e.period)+'</span>'+
+        '<div><div style="font-size:13px;font-weight:500">'+esc(e.text)+'</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+esc(e.obs)+'</div></div>'+
+      '</div>';
+    }).join('');
+}
 
 // AUTO CLEANUP: remove done tasks older than 7 days
 function cleanOldDone(){
