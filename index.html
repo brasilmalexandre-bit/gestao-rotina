@@ -177,6 +177,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="nav-tab" onclick="showPage('agenda',this)">Agenda</button>
   <div class="nav-right">
     <span id="saved-msg">salvo ✓</span>
+    <button class="nav-btn" onclick="openResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366">&#128232; Resumo</button>
     <button class="nav-btn" onclick="exportData()">&#11015; Export</button>
     <label class="nav-btn" style="cursor:pointer">&#11014; Import<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/></label>
   </div>
@@ -799,6 +800,86 @@ function renderDayPanel(ds){
 
 
 
+// WHATSAPP RESUMO
+function openResumoModal(){
+  const tomorrow=new Date();
+  tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('resumo-date').value=tomorrow.toISOString().slice(0,10);
+  updateResumoPreview();
+  document.getElementById('modal-resumo').style.display='flex';
+}
+
+function updateResumoPreview(){
+  document.getElementById('resumo-preview').textContent=buildResumo();
+}
+
+// attach listeners after DOM ready
+setTimeout(()=>{
+  ['resumo-date','resumo-tasks','resumo-agenda','resumo-obs','resumo-vencidas'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('change',updateResumoPreview);
+  });
+},500);
+
+function buildResumo(){
+  const ds=document.getElementById('resumo-date').value;
+  if(!ds)return 'Selecione uma data';
+  const inclTasks=document.getElementById('resumo-tasks').checked;
+  const inclAgenda=document.getElementById('resumo-agenda').checked;
+  const inclObs=document.getElementById('resumo-obs').checked;
+  const inclVencidas=document.getElementById('resumo-vencidas').checked;
+  const [y,m,d]=ds.split('-');
+  const dt=new Date(ds+'T12:00:00');
+  const DOWS_full=['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'];
+  const dow=DOWS_full[dt.getDay()];
+  const label=dow+', '+d+'/'+m+'/'+y;
+  const LABELS2={produttare:'Produttare',iomt:'i-OMT',mestrado:'Mestrado',ind4:'Ind.4.0',pessoal:'Pessoal'};
+  let txt='Resumo — *'+label+'*';
+  if(inclTasks){
+    let tlist=tasks.filter(t=>t.status!=='done');
+    if(!inclVencidas)tlist=tlist.filter(t=>!t.due||daysUntil(t.due)>=0);
+    tlist.sort((a,b)=>{if(!a.due&&!b.due)return 0;if(!a.due)return 1;if(!b.due)return-1;return a.due.localeCompare(b.due);});
+    txt+='\n\n*TAREFAS ABERTAS*';
+    if(tlist.length){
+      tlist.forEach(t=>{
+        const du=t.due?daysUntil(t.due):null;
+        const dueTxt2=du===null?'':(du<0?' ('+Math.abs(du)+'d atraso)':du===0?' (hoje)':du===1?' (amanha)':du<=3?' ('+du+'d)':'  '+fmtDate(t.due));
+        const obs2=inclObs&&t.obs?'\n  > '+t.obs:'';
+        txt+='\n- ['+( LABELS2[t.frente]||t.frente)+'] '+t.title+dueTxt2+obs2;
+      });
+    } else { txt+='\nNenhuma tarefa aberta'; }
+  }
+  if(inclAgenda){
+    const evs=eventsForDate(ds);
+    const ORDER2={H:0,D:1,M:2,T:3,N:4};
+    evs.sort((a,b)=>(ORDER2[a.period]||9)-(ORDER2[b.period]||9));
+    txt+='\n\n*AGENDA — '+d+'/'+m+'*';
+    if(evs.length){
+      const pname={D:'Dia todo',M:'Manha',T:'Tarde',N:'Noite',H:'Horario'};
+      evs.forEach(e=>{
+        const loc=e.location?' ('+e.location+')':'';
+        const obs3=inclObs&&e.obs?'\n  > '+e.obs:'';
+        txt+='\n'+( pname[e.period]||e.period)+' - '+e.text+loc+obs3;
+      });
+    } else { txt+='\nSem eventos'; }
+  }
+  return txt;
+}
+
+function copyResumo(){
+  const txt=buildResumo();
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
+  }).catch(()=>alert(txt));
+}
+
+function sendResumo(){
+  const txt=buildResumo();
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+function sendWhatsApp(){}
+
 // AUTO CLEANUP: remove done tasks older than 7 days
 function cleanOldDone(){
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
@@ -819,5 +900,40 @@ document.getElementById('cal-dows').innerHTML=DOWS.map(d=>'<div class="cal-dow">
 setView('kanban');
 renderCal();
 </script>
+<!-- RESUMO MODAL -->
+<div class="overlay" id="modal-resumo" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
+    <h3>&#128232; Resumo para WhatsApp</h3>
+    <div class="mfield">
+      <label>Selecionar dia</label>
+      <input type="date" id="resumo-date"/>
+    </div>
+    <div class="mfield">
+      <label>Incluir</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+          <input type="checkbox" id="resumo-tasks" checked style="width:16px;height:16px"/> Tarefas abertas
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+          <input type="checkbox" id="resumo-agenda" checked style="width:16px;height:16px"/> Agenda do dia
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+          <input type="checkbox" id="resumo-obs" checked style="width:16px;height:16px"/> Incluir observacoes
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+          <input type="checkbox" id="resumo-vencidas" checked style="width:16px;height:16px"/> Incluir tarefas vencidas
+        </label>
+      </div>
+    </div>
+    <div id="resumo-preview" style="background:var(--col-bg);border-radius:var(--rs);padding:12px;font-size:12px;font-family:DM Mono,monospace;white-space:pre-wrap;line-height:1.6;max-height:240px;overflow-y:auto;margin-bottom:4px;color:var(--text)"></div>
+    <div class="mactions">
+      <button class="btn-ghost" onclick="document.getElementById('modal-resumo').style.display='none'">Fechar</button>
+      <div class="mactions-right">
+        <button class="btn-ghost" onclick="copyResumo()">&#128203; Copiar</button>
+        <button class="btn-primary" style="background:#25d366" onclick="sendResumo()">&#128232; Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
