@@ -78,11 +78,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge-pri-alta{background:#fce8e8;color:#791f1f}
 .badge-pri-media{background:#fdf0dc;color:#633806}
 .badge-pri-baixa{background:#eaf3de;color:#27500a}
+.badge-pend{background:#fce8e8;color:#791f1f}
+.badge-ok{background:#eaf3de;color:#27500a}
 .due-tag{font-size:10px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:20px;border:0.5px solid var(--border);color:var(--muted)}
 .due-tag.overdue{background:#fce8e8;color:#791f1f;border-color:transparent}
 .due-tag.soon{background:#fdf0dc;color:#633806;border-color:transparent}
 .due-tag.ok{background:#eaf3de;color:#27500a;border-color:transparent}
 .date-hint{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+.cc-tag{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);background:var(--col-bg);border-radius:20px;padding:2px 7px;border:0.5px solid var(--border)}
 .task-actions{opacity:0;transition:opacity .15s;display:flex;gap:2px;flex-shrink:0}
 .task-card:hover .task-actions{opacity:1}
 .icon-btn{width:32px;height:32px;border:none;background:transparent;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:var(--rs);font-size:14px;transition:all .15s;flex-shrink:0}
@@ -102,11 +105,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .cal-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
 .cal-dow{text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:4px 0}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-day{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);min-height:76px;padding:6px 7px;cursor:pointer;transition:border-color .15s;overflow:hidden}
+.cal-day{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);min-height:76px;padding:6px 7px;cursor:pointer;transition:border-color .15s;overflow:hidden;position:relative}
 .cal-day:hover{border-color:var(--bh)}
 .cal-day.other-month{background:var(--col-bg);opacity:.45}
 .cal-day.today{border-color:var(--green);border-width:1.5px}
 .cal-day.today .day-num{color:var(--green);font-weight:600}
+.trip-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#c0392b;box-shadow:0 0 0 2px var(--surface)}
 .day-num{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:3px}
 .day-events{display:flex;flex-direction:column;gap:2px}
 .day-event{font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
@@ -139,6 +143,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mfield input,.mfield select{width:100%;padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s;height:40px}
 .mfield input:focus,.mfield select:focus{border-color:var(--bh)}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mrow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .mactions{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
 .mactions-right{display:flex;gap:8px}
 .btn-ghost{height:38px;padding:0 14px;border:0.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
@@ -161,6 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .day-num{font-size:11px}
   .day-event{font-size:10px}
   .mrow{grid-template-columns:1fr}
+  .mrow3{grid-template-columns:1fr}
   .mfield input,.mfield select{height:44px;font-size:15px}
   .agenda-top{gap:8px}
   .month-label{font-size:15px;min-width:130px}
@@ -170,19 +176,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
-
 <nav class="nav">
   <span class="nav-title">Painel</span>
   <button class="nav-tab active" onclick="showPage('tasks',this)">Tarefas</button>
   <button class="nav-tab" onclick="showPage('agenda',this)">Agenda</button>
+  <button class="nav-tab" onclick="showPage('viagens',this)">Viagens</button>
   <div class="nav-right">
     <span id="saved-msg">salvo ✓</span>
+    <button class="nav-btn" onclick="openSyncModal()">&#128260; Sync</button>
     <button class="nav-btn" onclick="openResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366">&#128232; Resumo</button>
     <button class="nav-btn" onclick="exportData()">&#11015; Export</button>
     <label class="nav-btn" style="cursor:pointer">&#11014; Import<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/></label>
   </div>
 </nav>
-
 <!-- TAREFAS -->
 <div id="page-tasks" class="page active">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px">
@@ -197,7 +203,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="vbtn active" id="btn-kanban" onclick="setView('kanban')">Kanban</button>
     </div>
   </div>
-
   <div class="add-section">
     <div class="add-r1"><input type="text" id="new-title" placeholder="Nova tarefa..."/></div>
     <div class="add-r2">
@@ -215,7 +220,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="btn-add" onclick="addTask()">+ Adicionar</button>
     </div>
   </div>
-
   <div id="view-list" style="display:none">
     <div class="filters">
       <button class="fbtn active" onclick="setFilter('todas',this)">Todas</button>
@@ -231,7 +235,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div class="list-view" id="list-cards"></div>
   </div>
-
   <div id="view-kanban">
     <div class="filters" id="kanban-filters">
       <button class="fbtn active" onclick="setKFilter('todas',this)">Todas</button>
@@ -260,7 +263,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
-
 <!-- AGENDA -->
 <div id="page-agenda" class="page">
   <div class="agenda-top">
@@ -275,7 +277,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="cal-grid" id="cal-body"></div>
   <div id="day-panel" style="display:none"></div>
 </div>
-
+<!-- VIAGENS -->
+<div id="page-viagens" class="page">
+  <div class="stats" style="margin-bottom:1.25rem">
+    <div class="stat"><div class="stat-label">Viagens marcadas</div><div class="stat-val" id="v-total">0</div></div>
+    <div class="stat"><div class="stat-label">Pendencias</div><div class="stat-val" id="v-pend" style="color:#791f1f">0</div></div>
+    <div class="stat"><div class="stat-label">Vencidas</div><div class="stat-val" id="v-overdue" style="color:#c0392b">0</div></div>
+  </div>
+  <div class="add-section">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Centros de custo cadastrados</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input type="text" id="new-cc" placeholder="Novo centro de custo (ex: 01929 - Sistema de Producao Tupy 2026)" style="flex:1;min-width:220px"/>
+      <button class="btn-add" onclick="addCostCenter()">+ Adicionar</button>
+    </div>
+    <div id="cc-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div class="filters" id="viagens-filters" style="flex:1">
+      <button class="fbtn active" onclick="setVFilter('pendentes',this)">Pendentes</button>
+      <button class="fbtn" onclick="setVFilter('vencidas',this)">Vencidas</button>
+      <button class="fbtn" onclick="setVFilter('resolvidas',this)">Resolvidas</button>
+      <button class="fbtn" onclick="setVFilter('todas',this)">Todas</button>
+    </div>
+    <button class="nav-btn" onclick="openViagensResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366;white-space:nowrap;height:36px">&#128203; Relatorio WhatsApp</button>
+  </div>
+  <div class="list-view" id="viagens-list"></div>
+</div>
 <!-- TASK MODAL -->
 <div class="overlay" id="modal-task" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="modal" onclick="event.stopPropagation()">
@@ -309,7 +336,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
-
 <!-- EVENT MODAL -->
 <div class="overlay" id="modal-event" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="modal" onclick="event.stopPropagation()">
@@ -348,6 +374,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <label>Repetir ate</label>
       <input type="date" id="ev-recur-end"/>
     </div>
+    <div class="mfield"><label>Centro de custo</label><select id="ev-centro" onchange="handleCentroChange()"></select></div>
+    <div class="mfield" style="margin-bottom:6px"><label>Logistica de viagem</label></div>
+    <div class="mrow3">
+      <div class="mfield"><label>Hospedagem</label>
+        <select id="ev-hosp"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+      </div>
+      <div class="mfield"><label>Aluguel de carro</label>
+        <select id="ev-carro"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+      </div>
+      <div class="mfield"><label>Aereo</label>
+        <select id="ev-aereo"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+      </div>
+    </div>
     <div class="mactions">
       <button class="btn-danger" id="ev-del-btn" style="display:none" onclick="deleteEvent()">Excluir</button>
       <div class="mactions-right">
@@ -357,44 +396,94 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
-
 <script>
-const TASK_KEY='alex-tasks-v3', EVENT_KEY='alex-events-v1';
-let tasks=[], events=[];
-let filter='todas', kfilter='todas', taskView='kanban';
+const TASK_KEY='alex-tasks-v3', EVENT_KEY='alex-events-v1', CC_KEY='alex-costcenters-v1', SYNC_KEY='alex-sync-url', UPDATED_KEY='alex-updated-at';
+let tasks=[], events=[], costCenters=[], syncUrl='';
+let filter='todas', kfilter='todas', taskView='kanban', vfilter='pendentes';
 let dragId=null, editTaskId=null, editEventId=null;
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 let selectedDate=null;
-
 const LABELS={produttare:'Produttare',iomt:'i-OMT',mestrado:'Mestrado',ind4:'Ind. 4.0',pessoal:'Pessoal'};
 const PRI={alta:'Alta',media:'Media',baixa:'Baixa'};
 const MONTHS=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const DOWS=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
-
 function todayStr(){return new Date().toISOString().slice(0,10)}
 function daysUntil(d){if(!d)return null;return Math.ceil((new Date(d+'T00:00:00')-new Date(new Date().toDateString()))/86400000)}
 function fmtDate(d){if(!d)return null;const[y,m,dd]=d.split('-');return dd+'/'+m+'/'+y}
 function dueClass(d,done){if(!d||done)return'';const n=daysUntil(d);return n<0?'overdue':n<=1?'soon':'ok'}
 function dueTxt(d,done){if(!d)return null;const n=daysUntil(d);if(done)return fmtDate(d);if(n<0)return'! '+fmtDate(d)+' ('+Math.abs(n)+'d)';if(n===0)return'hoje';if(n===1)return'amanha';return n<=3?fmtDate(d)+' ('+n+'d)':fmtDate(d)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function pad(n){return String(n).padStart(2,'0')}
-
 // PERSIST
 function loadAll(){
   try{tasks=JSON.parse(localStorage.getItem(TASK_KEY))||[];}catch(e){tasks=[];}
   try{events=JSON.parse(localStorage.getItem(EVENT_KEY))||[];}catch(e){events=[];}
+  try{costCenters=JSON.parse(localStorage.getItem(CC_KEY))||[];}catch(e){costCenters=[];}
   tasks.forEach(t=>{if(!t.status)t.status=t.done?'done':'todo';});
 }
 function saveAll(){
   localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
   localStorage.setItem(EVENT_KEY,JSON.stringify(events));
+  localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
+  localStorage.setItem(UPDATED_KEY,String(Date.now()));
   const el=document.getElementById('saved-msg');
   el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1400);
+  if(syncUrl)pushToRemote();
 }
-
+// SYNC (Google Sheets via Apps Script)
+function openSyncModal(){
+  document.getElementById('sync-url-input').value=syncUrl;
+  updateSyncStatus(syncUrl?'Configurado. Toque em "Sincronizar agora" para testar.':'Nenhuma URL configurada ainda.');
+  document.getElementById('modal-sync').style.display='flex';
+}
+function updateSyncStatus(msg){
+  const el=document.getElementById('sync-status');
+  if(el)el.textContent=msg;
+}
+function saveSyncUrl(){
+  const v=document.getElementById('sync-url-input').value.trim();
+  syncUrl=v;
+  localStorage.setItem(SYNC_KEY,v);
+  if(v){
+    if(!localStorage.getItem(UPDATED_KEY))localStorage.setItem(UPDATED_KEY,String(Date.now()));
+    syncNow(true);
+  } else updateSyncStatus('Sincronizacao desativada.');
+}
+function pushToRemote(cb){
+  if(!syncUrl)return;
+  const payload={tasks,events,costCenters,updatedAt:Number(localStorage.getItem(UPDATED_KEY)||Date.now())};
+  fetch(syncUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
+    .then(r=>r.json()).then(()=>{if(cb)cb();})
+    .catch(()=>updateSyncStatus('Erro ao enviar para a planilha. Confira a URL e a publicacao do script.'));
+}
+function syncNow(manual){
+  if(!syncUrl){if(manual)updateSyncStatus('Nenhuma URL configurada.');return;}
+  if(manual)updateSyncStatus('Sincronizando...');
+  fetch(syncUrl).then(r=>r.json()).then(remote=>{
+    const localUpdatedAt=Number(localStorage.getItem(UPDATED_KEY)||0);
+    const remoteUpdatedAt=Number(remote.updatedAt||0);
+    if(remoteUpdatedAt>localUpdatedAt){
+      tasks=remote.tasks||[];events=remote.events||[];costCenters=remote.costCenters||[];
+      localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
+      localStorage.setItem(EVENT_KEY,JSON.stringify(events));
+      localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
+      localStorage.setItem(UPDATED_KEY,String(remoteUpdatedAt));
+      renderTasks();renderCal();renderViagens();renderCostCenters();
+      if(selectedDate)renderDayPanel(selectedDate);
+      updateSyncStatus('Dados atualizados da planilha — '+new Date(remoteUpdatedAt).toLocaleString('pt-BR'));
+    } else if(localUpdatedAt>remoteUpdatedAt){
+      pushToRemote(()=>updateSyncStatus('Enviado para a planilha — '+new Date(localUpdatedAt).toLocaleString('pt-BR')));
+    } else if(manual){
+      updateSyncStatus('Ja esta tudo sincronizado.');
+    }
+  }).catch(()=>{
+    if(manual)updateSyncStatus('Erro ao conectar. Confira a URL e se o script foi publicado como "qualquer pessoa com o link".');
+  });
+}
 // EXPORT / IMPORT
 function exportData(){
-  const blob=new Blob([JSON.stringify({tasks,events},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({tasks,events,costCenters},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download='painel-'+todayStr()+'.json';a.click();
@@ -410,7 +499,8 @@ function importData(ev){
       if(!confirm('Substituir todos os dados atuais?'))return;
       if(data.tasks)tasks=data.tasks;
       if(data.events)events=data.events;
-      saveAll();renderTasks();renderCal();
+      if(data.costCenters)costCenters=data.costCenters;
+      saveAll();renderTasks();renderCal();renderViagens();renderCostCenters();
       if(selectedDate)renderDayPanel(selectedDate);
       alert('Importado com sucesso!');
     }catch(err){alert('Erro ao ler o arquivo.');}
@@ -418,7 +508,6 @@ function importData(ev){
   };
   reader.readAsText(file);
 }
-
 // TASKS
 function addTask(){
   const t=document.getElementById('new-title').value.trim();
@@ -429,14 +518,12 @@ function addTask(){
   saveAll();renderTasks();
 }
 document.getElementById('new-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});
-
 function toggleObs(id){
   const el=document.getElementById('obs-'+id);
   if(el)el.style.display=el.style.display==='none'?'block':'none';
 }
 function moveTask(id,ns){const t=tasks.find(x=>x.id===id);if(!t)return;t.status=ns;t.done=ns==='done';t.doneAt=ns==='done'?todayStr():null;saveAll();renderTasks();}
 function removeTask(id){if(!confirm('Excluir esta tarefa?'))return;tasks=tasks.filter(x=>x.id!==id);saveAll();renderTasks();}
-
 function openEdit(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
   editTaskId=id;
@@ -461,11 +548,9 @@ function saveTaskEdit(){
   saveAll();renderTasks();
 }
 document.getElementById('e-title').addEventListener('keydown',e=>{if(e.key==='Enter')saveTaskEdit()});
-
 function setView(v){taskView=v;document.getElementById('view-list').style.display=v==='list'?'block':'none';document.getElementById('view-kanban').style.display=v==='kanban'?'block':'none';document.getElementById('btn-list').classList.toggle('active',v==='list');document.getElementById('btn-kanban').classList.toggle('active',v==='kanban');renderTasks();}
 function setFilter(f,btn){filter=f;document.querySelectorAll('#view-list .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTasks();}
 function setKFilter(f,btn){kfilter=f;document.querySelectorAll('#kanban-filters .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTasks();}
-
 function applyFilter(arr,f){
   if(f==='abertas')return arr.filter(t=>t.status!=='done');
   if(f==='hoje')return arr.filter(t=>t.due&&daysUntil(t.due)===0&&t.status!=='done');
@@ -475,7 +560,6 @@ function applyFilter(arr,f){
   if(['produttare','iomt','mestrado','ind4','pessoal'].includes(f))return arr.filter(t=>t.frente===f);
   return arr;
 }
-
 function cardHTML(t,drag){
   const overdue=t.status!=='done'&&t.due&&daysUntil(t.due)<0;
   const dt=dueTxt(t.due,t.done),dc=dueClass(t.due,t.done);
@@ -492,7 +576,6 @@ function cardHTML(t,drag){
     '<button class="icon-btn edit" onclick="openEdit('+t.id+')" title="Editar">&#9998;</button>'+
     '<button class="icon-btn" onclick="removeTask('+t.id+')" title="Excluir">&#10005;</button></div></div>';
 }
-
 function renderTasks(){
   updateStats();
   if(taskView==='kanban'){
@@ -509,20 +592,17 @@ function renderTasks(){
     document.getElementById('list-cards').innerHTML=vis.length?vis.map(t=>cardHTML(t,false)).join(''):'<div class="empty-list">Nenhuma tarefa aqui</div>';
   }
 }
-
 function updateStats(){
   document.getElementById('s-total').textContent=tasks.length;
   document.getElementById('s-todo').textContent=tasks.filter(t=>t.status==='todo').length;
   document.getElementById('s-prog').textContent=tasks.filter(t=>t.status==='progress').length;
   document.getElementById('s-overdue').textContent=tasks.filter(t=>t.status!=='done'&&t.due&&daysUntil(t.due)<0).length;
 }
-
 function onDragStart(e,id){dragId=id;setTimeout(()=>{const el=document.getElementById('tc-'+id);if(el)el.classList.add('dragging');},0);e.dataTransfer.effectAllowed='move';}
 function onDragEnd(){if(dragId){const el=document.getElementById('tc-'+dragId);if(el)el.classList.remove('dragging');}}
 function onDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
 function onDragLeave(e){e.currentTarget.classList.remove('drag-over');}
 function onDrop(e,s){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(dragId){moveTask(dragId,s);dragId=null;}}
-
 // PAGE NAV
 function showPage(p,btn){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -530,13 +610,12 @@ function showPage(p,btn){
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('active');
   if(p==='agenda'){renderCal();}
+  if(p==='viagens'){renderViagens();}
 }
-
 // AGENDA HELPERS
 function eventsForDate(d){return events.filter(e=>e.date===d);}
 function periodClass(e){return e.text.toLowerCase().includes('feriado')?'ev-feriado':'ev-'+e.period;}
 function periodLabel(p){return p==='D'?'D':p;}
-
 function toggleTimeField(){
   const p=document.getElementById('ev-period').value;
   document.getElementById('ev-time-field').style.display=p==='H'?'grid':'none';
@@ -545,7 +624,6 @@ function toggleRecurField(){
   const r=document.getElementById('ev-recur').value;
   document.getElementById('ev-recur-end-field').style.display=r!=='none'?'block':'none';
 }
-
 function resetEventModal(){
   document.getElementById('ev-text').value='';
   document.getElementById('ev-period').value='T';
@@ -557,9 +635,12 @@ function resetEventModal(){
   document.getElementById('ev-recur').value='none';
   document.getElementById('ev-recur-end').value='';
   document.getElementById('ev-recur-end-field').style.display='none';
+  document.getElementById('ev-hosp').value='na';
+  document.getElementById('ev-carro').value='na';
+  document.getElementById('ev-aereo').value='na';
+  populateCentroSelect('');
   document.getElementById('ev-del-btn').style.display='none';
 }
-
 function openNewEvent(){
   editEventId=null;
   document.getElementById('ev-modal-title').textContent='Novo evento';
@@ -568,7 +649,6 @@ function openNewEvent(){
   document.getElementById('modal-event').style.display='flex';
   setTimeout(()=>document.getElementById('ev-text').focus(),100);
 }
-
 function openNewEventOnDate(ds){
   editEventId=null;
   document.getElementById('ev-modal-title').textContent='Novo evento';
@@ -577,7 +657,6 @@ function openNewEventOnDate(ds){
   document.getElementById('modal-event').style.display='flex';
   setTimeout(()=>document.getElementById('ev-text').focus(),100);
 }
-
 function openEditEvent(id){
   const e=events.find(x=>x.id===id);if(!e)return;
   editEventId=id;
@@ -593,11 +672,14 @@ function openEditEvent(id){
   document.getElementById('ev-time-field').style.display=e.period==='H'?'grid':'none';
   document.getElementById('ev-obs').value=e.obs||'';
   document.getElementById('ev-location').value=e.location||'';
+  document.getElementById('ev-hosp').value=e.hosp||'na';
+  document.getElementById('ev-carro').value=e.carro||'na';
+  document.getElementById('ev-aereo').value=e.aereo||'na';
+  populateCentroSelect(e.centro||'');
   document.getElementById('ev-del-btn').style.display='inline-flex';
   document.getElementById('modal-event').style.display='flex';
   setTimeout(()=>document.getElementById('ev-text').focus(),100);
 }
-
 function saveEvent(){
   const text=document.getElementById('ev-text').value.trim();
   const date=document.getElementById('ev-date').value;
@@ -608,17 +690,21 @@ function saveEvent(){
   const location=document.getElementById('ev-location').value.trim();
   const recur=document.getElementById('ev-recur').value;
   const recurEnd=document.getElementById('ev-recur-end').value;
+  const hosp=document.getElementById('ev-hosp').value;
+  const carro=document.getElementById('ev-carro').value;
+  const aereo=document.getElementById('ev-aereo').value;
+  const centro=document.getElementById('ev-centro').value.trim();
   if(!text||!date)return;
   let displayText=text, timeLabel='';
   if(period==='H'&&timeStart){
-    timeLabel=timeEnd&&timeEnd!==timeStart?timeStart+'\u2013'+timeEnd:timeStart;
+    timeLabel=timeEnd&&timeEnd!==timeStart?timeStart+'–'+timeEnd:timeStart;
     displayText=timeLabel+' '+text;
   }
   if(editEventId){
     const e=events.find(x=>x.id===editEventId);
-    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;}
+    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;e.hosp=hosp;e.carro=carro;e.aereo=aereo;e.centro=centro;}
   } else {
-    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,recurGroup:null};
+    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,recurGroup:null};
     if(recur==='none'||!recurEnd){
       events.push(baseEv);
     } else {
@@ -628,10 +714,9 @@ function saveEvent(){
     }
   }
   document.getElementById('modal-event').style.display='none';
-  saveAll();renderCal();
+  saveAll();renderCal();renderViagens();
   selectedDate=date;renderDayPanel(date);
 }
-
 function generateDates(startDate,recur,endDate){
   const dates=[];let cur=new Date(startDate+'T12:00:00');const end=new Date(endDate+'T12:00:00');
   while(cur<=end){
@@ -645,7 +730,6 @@ function generateDates(startDate,recur,endDate){
   }
   return dates;
 }
-
 function removeEvent(id){
   const ev=events.find(e=>e.id===id);
   if(ev&&ev.recurGroup){
@@ -653,16 +737,14 @@ function removeEvent(id){
       events=events.filter(e=>e.recurGroup!==ev.recurGroup);
     } else {events=events.filter(e=>e.id!==id);}
   } else {events=events.filter(e=>e.id!==id);}
-  saveAll();renderCal();
+  saveAll();renderCal();renderViagens();
   if(selectedDate)renderDayPanel(selectedDate);
 }
-
 function deleteEvent(){if(editEventId)removeEvent(editEventId);document.getElementById('modal-event').style.display='none';}
 document.getElementById('ev-text').addEventListener('keydown',e=>{if(e.key==='Enter')saveEvent()});
-
 // CALENDAR
 function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCal();}
-
+function dayHasPendingTrip(evs){return evs.some(e=>e.hosp==='pendente'||e.carro==='pendente'||e.aereo==='pendente');}
 function renderCal(){
   document.getElementById('month-label').textContent=MONTHS[calMonth]+' '+calYear;
   const first=new Date(calYear,calMonth,1).getDay();
@@ -678,17 +760,25 @@ function renderCal(){
   if(selectedDate)renderDayPanel(selectedDate);
   else document.getElementById('day-panel').style.display='none';
 }
-
 function dayCell(ds,dayNum,otherMonth,td){
   const evs=eventsForDate(ds);
+  const pending=dayHasPendingTrip(evs);
   const cls=['cal-day',otherMonth?'other-month':'',ds===td?'today':''].filter(Boolean).join(' ');
   let evHTML=evs.slice(0,3).map(e=>'<div class="day-event '+periodClass(e)+'">'+esc(e.text)+'</div>').join('');
   if(evs.length>3)evHTML+='<div class="day-event" style="color:var(--muted)">+'+(evs.length-3)+'</div>';
-  return '<div class="'+cls+'" onclick="selectDay(\''+ds+'\')"><div class="day-num">'+dayNum+'</div><div class="day-events">'+evHTML+'</div></div>';
+  return '<div class="'+cls+'" onclick="selectDay(\''+ds+'\')">'+(pending?'<div class="trip-dot" title="Pendencia de viagem"></div>':'')+'<div class="day-num">'+dayNum+'</div><div class="day-events">'+evHTML+'</div></div>';
 }
-
 function selectDay(ds){selectedDate=ds;renderDayPanel(ds);}
-
+function tripBadgesHTML(e){
+  const items=[['hosp','Hospedagem'],['carro','Carro'],['aereo','Aereo']];
+  let html='';
+  items.forEach(([k,label])=>{
+    const v=e[k];
+    if(v==='pendente')html+='<span class="badge badge-pend">'+label+' pendente</span>';
+    else if(v==='ok')html+='<span class="badge badge-ok">'+label+' OK</span>';
+  });
+  return html;
+}
 function renderDayPanel(ds){
   const panel=document.getElementById('day-panel');
   const[y,m,d]=ds.split('-');
@@ -704,10 +794,14 @@ function renderDayPanel(ds){
         const timeBadge=e.period==='D'?'<span class="dp-loc">08:00&ndash;17:00</span>':'';
         const locBadge=e.location?'<span class="dp-loc">&bull; '+esc(e.location)+'</span>':'';
         const recurBadge=e.recurGroup?'<span style="font-size:10px;background:#eeecfd;color:#3c3489;border-radius:20px;padding:1px 6px;font-family:DM Mono,monospace">&#8635;</span>':'';
+        const tripB=tripBadgesHTML(e);
+        const centroBadge=e.centro?'<span class="cc-tag">'+esc(e.centro)+'</span>':'';
         return '<div class="dp-ev">'+
           '<span class="dp-period '+f+'">'+pl+'</span>'+
-          '<span class="dp-text">'+esc(e.text)+' '+timeBadge+locBadge+recurBadge+'</span>'+
+          '<span class="dp-text">'+esc(e.text)+' '+timeBadge+locBadge+recurBadge+
           (e.obs?'<div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4">'+esc(e.obs)+'</div>':'')+
+          ((tripB||centroBadge)?'<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">'+tripB+centroBadge+'</div>':'')+
+          '</span>'+
           '<div class="dp-actions">'+
             '<button class="dp-btn edit" onclick="openEditEvent('+e.id+')" title="Editar">&#9998;</button>'+
             '<button class="dp-btn" onclick="removeEvent('+e.id+')" title="Excluir">&#10005;</button>'+
@@ -715,7 +809,6 @@ function renderDayPanel(ds){
         '</div>';
       }).join('')
     : '<div class="dp-empty">Sem eventos</div>';
-
   panel.innerHTML='<div class="day-panel">'+
     '<div class="day-panel-header">'+
       '<span class="day-panel-title">'+label+(isToday?' <span style="font-size:11px;background:var(--green);color:#fff;border-radius:20px;padding:1px 8px;font-family:DM Mono,monospace;margin-left:6px">hoje</span>':'')+'</span>'+
@@ -725,7 +818,133 @@ function renderDayPanel(ds){
   '</div>';
   panel.style.display='block';
 }
-
+// CENTROS DE CUSTO
+function renderCostCenters(){
+  const list=document.getElementById('cc-list');
+  list.innerHTML=costCenters.length?costCenters.map((cc,i)=>
+    '<span class="cc-tag" style="display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 10px">'+esc(cc)+
+    '<button onclick="removeCostCenter('+i+')" title="Remover" style="border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:12px;line-height:1;padding:2px">&#10005;</button></span>'
+  ).join(''):'<span style="font-size:12px;color:var(--muted)">Nenhum centro de custo cadastrado ainda</span>';
+}
+function addCostCenter(){
+  const inp=document.getElementById('new-cc');
+  const v=inp.value.trim();
+  if(!v)return;
+  if(!costCenters.includes(v))costCenters.push(v);
+  inp.value='';
+  saveAll();renderCostCenters();
+}
+function removeCostCenter(idx){
+  if(!confirm('Remover este centro de custo da lista? Eventos ja marcados com ele nao serao alterados.'))return;
+  costCenters.splice(idx,1);
+  saveAll();renderCostCenters();
+}
+function populateCentroSelect(current){
+  const sel=document.getElementById('ev-centro');
+  const list=[...costCenters];
+  if(current&&!list.includes(current))list.push(current);
+  let opts='<option value="">Nenhum</option>';
+  list.forEach(cc=>{opts+='<option value="'+escAttr(cc)+'"'+(cc===current?' selected':'')+'>'+esc(cc)+'</option>';});
+  opts+='<option value="__new__">+ Novo centro de custo...</option>';
+  sel.innerHTML=opts;
+  sel.value=current||'';
+}
+function handleCentroChange(){
+  const sel=document.getElementById('ev-centro');
+  if(sel.value==='__new__'){
+    const v=prompt('Novo centro de custo (ex: 01929 - Sistema de Producao Tupy 2026):');
+    if(v&&v.trim()){
+      const val=v.trim();
+      if(!costCenters.includes(val)){costCenters.push(val);saveAll();renderCostCenters();}
+      populateCentroSelect(val);
+    } else {
+      populateCentroSelect('');
+    }
+  }
+}
+document.getElementById('new-cc').addEventListener('keydown',e=>{if(e.key==='Enter')addCostCenter()});
+// VIAGENS
+function setVFilter(f,btn){vfilter=f;document.querySelectorAll('#viagens-filters .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderViagens();}
+function updateTripField(id,field,value){
+  const e=events.find(x=>x.id===id);if(!e)return;
+  e[field]=value;saveAll();renderViagens();renderCal();if(selectedDate)renderDayPanel(selectedDate);
+}
+function tripSelectHTML(e,field,label){
+  const v=e[field]||'na';
+  return '<div style="display:flex;flex-direction:column;gap:3px">'+
+    '<label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">'+label+'</label>'+
+    '<select onchange="updateTripField('+e.id+',\''+field+'\',this.value)" style="height:32px;padding:0 8px;border:0.5px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:12px">'+
+      '<option value="na"'+(v==='na'?' selected':'')+'>N/A</option>'+
+      '<option value="pendente"'+(v==='pendente'?' selected':'')+'>Pendente</option>'+
+      '<option value="ok"'+(v==='ok'?' selected':'')+'>OK</option>'+
+    '</select></div>';
+}
+function cardViagemHTML(e){
+  const overdue=daysUntil(e.date)<0;
+  const dt=fmtDate(e.date);
+  const selects=tripSelectHTML(e,'hosp','Hospedagem')+tripSelectHTML(e,'carro','Carro')+tripSelectHTML(e,'aereo','Aereo');
+  return '<div class="task-card '+(overdue?'overdue':'')+'" style="flex-direction:column;align-items:stretch;gap:8px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'+
+      '<div><div class="task-title">'+esc(e.text)+'</div><div class="task-meta"><span class="due-tag '+(overdue?'overdue':'ok')+'">'+dt+'</span>'+(e.location?'<span class="date-hint">'+esc(e.location)+'</span>':'')+(e.centro?'<span class="cc-tag">'+esc(e.centro)+'</span>':'')+'</div></div>'+
+      '<div class="task-actions" style="opacity:1"><button class="icon-btn edit" onclick="openEditEvent('+e.id+')" title="Editar">&#9998;</button></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+selects+'</div>'+
+  '</div>';
+}
+function renderViagens(){
+  const relevant=events.filter(e=>(e.hosp&&e.hosp!=='na')||(e.carro&&e.carro!=='na')||(e.aereo&&e.aereo!=='na'));
+  const pending=relevant.filter(e=>e.hosp==='pendente'||e.carro==='pendente'||e.aereo==='pendente');
+  const overdue=pending.filter(e=>daysUntil(e.date)<0);
+  document.getElementById('v-total').textContent=relevant.length;
+  document.getElementById('v-pend').textContent=pending.length;
+  document.getElementById('v-overdue').textContent=overdue.length;
+  let list;
+  if(vfilter==='pendentes')list=pending;
+  else if(vfilter==='resolvidas')list=relevant.filter(e=>!pending.includes(e));
+  else if(vfilter==='vencidas')list=overdue;
+  else list=relevant;
+  list=[...list].sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('viagens-list').innerHTML=list.length?list.map(cardViagemHTML).join(''):'<div class="empty-list">Nenhuma viagem com logistica marcada aqui</div>';
+}
+function buildViagensResumo(){
+  const pending=events.filter(e=>e.hosp==='pendente'||e.carro==='pendente'||e.aereo==='pendente');
+  const itemLabel={hosp:'Hospedagem',carro:'Aluguel de carro',aereo:'Aereo'};
+  if(!pending.length)return 'Pendencias de viagem — '+fmtDate(todayStr())+'\n\nNenhuma pendencia no momento. Tudo certo por aqui.';
+  pending.sort((a,b)=>a.date.localeCompare(b.date));
+  const groups={};
+  pending.forEach(e=>{
+    const key=e.centro&&e.centro.trim()?e.centro.trim():'Sem centro de custo';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(e);
+  });
+  let txt='*Pendencias de viagem* — '+fmtDate(todayStr());
+  txt+='\nTotal: '+pending.length+' pendencia(s)';
+  Object.keys(groups).sort().forEach(key=>{
+    txt+='\n\n*'+key+'*';
+    groups[key].forEach(e=>{
+      const items=['hosp','carro','aereo'].filter(k=>e[k]==='pendente').map(k=>itemLabel[k]);
+      const overdue=daysUntil(e.date)<0;
+      const dateTxt=fmtDate(e.date)+(overdue?' (vencida)':'');
+      const loc=e.location?' - '+e.location:'';
+      txt+='\n- '+dateTxt+' | '+e.text+loc+'\n  Pendente: '+items.join(', ');
+    });
+  });
+  return txt;
+}
+function openViagensResumoModal(){
+  document.getElementById('viagens-resumo-preview').textContent=buildViagensResumo();
+  document.getElementById('modal-viagens-resumo').style.display='flex';
+}
+function copyViagensResumo(){
+  const txt=buildViagensResumo();
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
+  }).catch(()=>alert(txt));
+}
+function sendViagensResumo(){
+  const txt=buildViagensResumo();
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
 // SEED
 (function(){
   const SK='alex-events-seeded-v1';
@@ -757,29 +976,29 @@ function renderDayPanel(ds){
     {id:48,date:"2026-04-16",period:"M",text:"07:00 FSFX"},{id:49,date:"2026-04-17",period:"M",text:"07:00 FSFX"},
     {id:50,date:"2026-04-20",period:"M",text:"08:00 Psico"},{id:51,date:"2026-04-20",period:"T",text:"13:00 SESCON Remoto"},
     {id:52,date:"2026-04-21",period:"M",text:"FERIADO"},
-    {id:53,date:"2026-04-22",period:"M",text:"05:00 Viagem POA-BLN"},{id:54,date:"2026-04-22",period:"T",text:"13:00 Altona"},
+    {id:53,date:"2026-04-22",period:"M",text:"05:00 Viagem POA-BLN",hosp:"pendente",carro:"na",aereo:"pendente"},{id:54,date:"2026-04-22",period:"T",text:"13:00 Altona"},
     {id:55,date:"2026-04-23",period:"M",text:"08:00 Altona"},{id:56,date:"2026-04-23",period:"T",text:"13:00 Altona"},
-    {id:57,date:"2026-04-24",period:"M",text:"08:00 Viagem BLN-POA"},{id:58,date:"2026-04-24",period:"N",text:"18:00 Evento Horus"},
+    {id:57,date:"2026-04-24",period:"M",text:"08:00 Viagem BLN-POA",hosp:"na",carro:"na",aereo:"pendente"},{id:58,date:"2026-04-24",period:"N",text:"18:00 Evento Horus"},
     {id:59,date:"2026-04-27",period:"M",text:"08:00 Psico"},
-    {id:60,date:"2026-04-28",period:"M",text:"05:00 Viagem CWB-POA"},{id:61,date:"2026-04-28",period:"T",text:"08:00 IMM"},{id:62,date:"2026-04-28",period:"N",text:"19:00 Workshop Renner"},
-    {id:63,date:"2026-04-29",period:"M",text:"08:00 IMM"},{id:64,date:"2026-04-29",period:"T",text:"08:00 IMM"},{id:65,date:"2026-04-29",period:"N",text:"19:00 Viagem CWB-POA"},
+    {id:60,date:"2026-04-28",period:"M",text:"05:00 Viagem CWB-POA",hosp:"na",carro:"na",aereo:"pendente"},{id:61,date:"2026-04-28",period:"T",text:"08:00 IMM"},{id:62,date:"2026-04-28",period:"N",text:"19:00 Workshop Renner"},
+    {id:63,date:"2026-04-29",period:"M",text:"08:00 IMM"},{id:64,date:"2026-04-29",period:"T",text:"08:00 IMM"},{id:65,date:"2026-04-29",period:"N",text:"19:00 Viagem CWB-POA",hosp:"na",carro:"na",aereo:"pendente"},
     {id:66,date:"2026-04-30",period:"T",text:"13:15 SESCON RS"},{id:67,date:"2026-04-30",period:"N",text:"19:00 Aula Eng Processo Renner"},
     {id:68,date:"2026-05-01",period:"M",text:"FERIADO"},{id:69,date:"2026-05-04",period:"M",text:"08:00 Psico"},
     {id:70,date:"2026-05-07",period:"T",text:"10:00 Orientacao Mestrado"},{id:71,date:"2026-05-07",period:"N",text:"19:00 IFRS Restinga"},
-    {id:72,date:"2026-05-11",period:"M",text:"08:00 Psico / 11:00 Viagem POA-Tiros"},
+    {id:72,date:"2026-05-11",period:"M",text:"08:00 Psico / 11:00 Viagem POA-Tiros",hosp:"na",carro:"pendente",aereo:"na"},
     {id:73,date:"2026-05-12",period:"M",text:"08:00 Tirolez"},{id:74,date:"2026-05-12",period:"N",text:"19:00 Eng Processo Renner"},
     {id:75,date:"2026-05-13",period:"M",text:"08:00 Tirolez"},{id:76,date:"2026-05-15",period:"M",text:"08:00 Tirolez"},
     {id:77,date:"2026-05-18",period:"M",text:"07:00 FSFX"},{id:78,date:"2026-05-19",period:"M",text:"07:00 FSFX"},
     {id:79,date:"2026-05-19",period:"N",text:"18:00 Psico"},{id:80,date:"2026-05-20",period:"M",text:"07:00 FSFX"},
-    {id:81,date:"2026-05-20",period:"N",text:"17:40 Viagem IPT-BH-RJ"},
+    {id:81,date:"2026-05-20",period:"N",text:"17:40 Viagem IPT-BH-RJ",hosp:"pendente",carro:"na",aereo:"pendente"},
     {id:82,date:"2026-05-21",period:"M",text:"11:00 Reuniao Tirolez / IMM"},{id:83,date:"2026-05-22",period:"M",text:"08:00 Psico"},
-    {id:84,date:"2026-05-25",period:"T",text:"10:00 Reuniao Fabiano - SIM"},{id:85,date:"2026-05-26",period:"T",text:"15:30 Voo RJ-POA"},
+    {id:84,date:"2026-05-25",period:"T",text:"10:00 Reuniao Fabiano - SIM"},{id:85,date:"2026-05-26",period:"T",text:"15:30 Voo RJ-POA",hosp:"na",carro:"na",aereo:"pendente"},
     {id:86,date:"2026-05-27",period:"M",text:"08:00 Orientacao Modulo 2 - Al Mare"},
     {id:87,date:"2026-05-28",period:"M",text:"11:00 Reuniao Fabiola FSFX"},{id:88,date:"2026-05-28",period:"N",text:"17:00 Psico"},
     {id:89,date:"2026-05-29",period:"M",text:"Altona"},{id:90,date:"2026-05-29",period:"T",text:"16:00 Reuniao dev I-OMT"},
-    {id:91,date:"2026-06-02",period:"T",text:"Viagem Joinville / Blumenau"},
+    {id:91,date:"2026-06-02",period:"T",text:"Viagem Joinville / Blumenau",hosp:"pendente",carro:"pendente",aereo:"na"},
     {id:92,date:"2026-06-03",period:"T",text:"08:00 IMM"},{id:93,date:"2026-06-04",period:"T",text:"08:00 Altona"},
-    {id:94,date:"2026-06-08",period:"M",text:"11:00 Viagem POA-Tiros/Confins"},
+    {id:94,date:"2026-06-08",period:"M",text:"11:00 Viagem POA-Tiros/Confins",hosp:"pendente",carro:"na",aereo:"pendente"},
     {id:95,date:"2026-06-09",period:"T",text:"Tirolez"},{id:96,date:"2026-06-09",period:"N",text:"19:00 Workshop Renner"},
     {id:97,date:"2026-06-10",period:"T",text:"Tirolez"},{id:98,date:"2026-06-10",period:"N",text:"19:00 Eng Processo"},
     {id:99,date:"2026-06-11",period:"T",text:"Tirolez"},{id:100,date:"2026-06-11",period:"N",text:"19:00 Workshop Renner"},
@@ -797,9 +1016,6 @@ function renderDayPanel(ds){
   localStorage.setItem(EVENT_KEY,JSON.stringify(existing));
   localStorage.setItem(SK,'1');
 })();
-
-
-
 // WHATSAPP RESUMO
 function openResumoModal(){
   const tomorrow=new Date();
@@ -808,11 +1024,9 @@ function openResumoModal(){
   updateResumoPreview();
   document.getElementById('modal-resumo').style.display='flex';
 }
-
 function updateResumoPreview(){
   document.getElementById('resumo-preview').textContent=buildResumo();
 }
-
 // attach listeners after DOM ready
 setTimeout(()=>{
   ['resumo-date','resumo-tasks','resumo-agenda','resumo-obs','resumo-vencidas'].forEach(id=>{
@@ -820,7 +1034,6 @@ setTimeout(()=>{
     if(el)el.addEventListener('change',updateResumoPreview);
   });
 },500);
-
 function buildResumo(){
   const ds=document.getElementById('resumo-date').value;
   if(!ds)return 'Selecione uma data';
@@ -859,27 +1072,25 @@ function buildResumo(){
       evs.forEach(e=>{
         const loc=e.location?' ('+e.location+')':'';
         const obs3=inclObs&&e.obs?'\n  > '+e.obs:'';
-        txt+='\n'+( pname[e.period]||e.period)+' - '+e.text+loc+obs3;
+        const trip=tripBadgesHTML(e);
+        const tripTxt=trip?(' ['+['hosp','carro','aereo'].filter(k=>e[k]==='pendente').map(k=>({hosp:'Hospedagem',carro:'Carro',aereo:'Aereo'}[k])).join(', ')+' pendente]'):'';
+        txt+='\n'+( pname[e.period]||e.period)+' - '+e.text+loc+(['hosp','carro','aereo'].some(k=>e[k]==='pendente')?tripTxt:'')+obs3;
       });
     } else { txt+='\nSem eventos'; }
   }
   return txt;
 }
-
 function copyResumo(){
   const txt=buildResumo();
   navigator.clipboard.writeText(txt).then(()=>{
     const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
   }).catch(()=>alert(txt));
 }
-
 function sendResumo(){
   const txt=buildResumo();
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
-
 function sendWhatsApp(){}
-
 // AUTO CLEANUP: remove done tasks older than 7 days
 function cleanOldDone(){
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
@@ -890,15 +1101,16 @@ function cleanOldDone(){
   });
   if(tasks.length<before)saveAll();
 }
-
-
 // INIT
 loadAll();
 cleanOldDone();
-
 document.getElementById('cal-dows').innerHTML=DOWS.map(d=>'<div class="cal-dow">'+d+'</div>').join('');
 setView('kanban');
 renderCal();
+renderCostCenters();
+renderViagens();
+syncUrl=localStorage.getItem(SYNC_KEY)||'';
+if(syncUrl)syncNow(false);
 </script>
 <!-- RESUMO MODAL -->
 <div class="overlay" id="modal-resumo" style="display:none" onclick="if(event.target===this)this.style.display='none'">
@@ -931,6 +1143,38 @@ renderCal();
       <div class="mactions-right">
         <button class="btn-ghost" onclick="copyResumo()">&#128203; Copiar</button>
         <button class="btn-primary" style="background:#25d366" onclick="sendResumo()">&#128232; Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SYNC MODAL -->
+<div class="overlay" id="modal-sync" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:460px">
+    <h3>&#128260; Sincronizacao com Google Sheets</h3>
+    <div class="mfield">
+      <label>URL do Web App (Apps Script)</label>
+      <input type="text" id="sync-url-input" placeholder="https://script.google.com/macros/s/XXXX/exec"/>
+    </div>
+    <div id="sync-status" style="font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.5"></div>
+    <div class="mactions">
+      <button class="btn-ghost" onclick="document.getElementById('modal-sync').style.display='none'">Fechar</button>
+      <div class="mactions-right">
+        <button class="btn-ghost" onclick="syncNow(true)">&#128260; Sincronizar agora</button>
+        <button class="btn-primary" onclick="saveSyncUrl()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- VIAGENS RESUMO MODAL -->
+<div class="overlay" id="modal-viagens-resumo" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
+    <h3>&#128203; Relatorio de pendencias de viagem</h3>
+    <div id="viagens-resumo-preview" style="background:var(--col-bg);border-radius:var(--rs);padding:12px;font-size:12px;font-family:'DM Mono',monospace;white-space:pre-wrap;line-height:1.6;max-height:340px;overflow-y:auto;margin-bottom:4px;color:var(--text)"></div>
+    <div class="mactions">
+      <button class="btn-ghost" onclick="document.getElementById('modal-viagens-resumo').style.display='none'">Fechar</button>
+      <div class="mactions-right">
+        <button class="btn-ghost" onclick="copyViagensResumo()">&#128203; Copiar</button>
+        <button class="btn-primary" style="background:#25d366" onclick="sendViagensResumo()">&#128232; Enviar</button>
       </div>
     </div>
   </div>
