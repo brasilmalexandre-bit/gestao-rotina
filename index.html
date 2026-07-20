@@ -299,6 +299,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="fbtn" onclick="setVFilter('resolvidas',this)">Resolvidas</button>
       <button class="fbtn" onclick="setVFilter('todas',this)">Todas</button>
     </div>
+    <button class="nav-btn" onclick="openSolicitacaoModal()" style="background:#0c447c;color:#fff;border-color:#0c447c;white-space:nowrap;height:36px">&#128241; Solicitar logistica</button>
     <button class="nav-btn" onclick="openViagensResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366;white-space:nowrap;height:36px">&#128203; Relatorio WhatsApp</button>
   </div>
   <div class="list-view" id="viagens-list"></div>
@@ -375,16 +376,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <input type="date" id="ev-recur-end"/>
     </div>
     <div class="mfield"><label>Centro de custo</label><select id="ev-centro" onchange="handleCentroChange()"></select></div>
-    <div class="mfield" style="margin-bottom:6px"><label>Logistica de viagem</label></div>
-    <div class="mrow3">
-      <div class="mfield"><label>Hospedagem</label>
-        <select id="ev-hosp"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px">Logistica de viagem</div>
+    <div style="border:0.5px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
+      <div class="mfield" style="margin-bottom:0"><label>Hospedagem</label>
+        <select id="ev-hosp" onchange="toggleTripDetail('hosp')"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
       </div>
-      <div class="mfield"><label>Aluguel de carro</label>
-        <select id="ev-carro"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+      <div id="hosp-detail" style="display:none;margin-top:10px">
+        <div class="mrow">
+          <div class="mfield"><label>Check-in</label><input type="date" id="ev-hosp-checkin"/></div>
+          <div class="mfield"><label>Check-out</label><input type="date" id="ev-hosp-checkout"/></div>
+        </div>
+        <div class="mfield"><label>Cidade / local</label><input type="text" id="ev-hosp-local" placeholder="Ex: Blumenau, perto da Vidrolar"/></div>
+        <div class="mfield" style="margin-bottom:0"><label>Observacao</label><input type="text" id="ev-hosp-obs" placeholder="Nº de diarias, preferencias, etc"/></div>
       </div>
-      <div class="mfield"><label>Aereo</label>
-        <select id="ev-aereo"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+    </div>
+    <div style="border:0.5px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
+      <div class="mfield" style="margin-bottom:0"><label>Aereo</label>
+        <select id="ev-aereo" onchange="toggleTripDetail('aereo')"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+      </div>
+      <div id="aereo-detail" style="display:none;margin-top:10px">
+        <div class="mrow">
+          <div class="mfield"><label>Origem</label><input type="text" id="ev-aereo-origem" placeholder="Ex: POA"/></div>
+          <div class="mfield"><label>Destino</label><input type="text" id="ev-aereo-destino" placeholder="Ex: BLN"/></div>
+        </div>
+        <div class="mrow">
+          <div class="mfield"><label>Data ida</label><input type="date" id="ev-aereo-ida"/></div>
+          <div class="mfield"><label>Data volta</label><input type="date" id="ev-aereo-volta"/></div>
+        </div>
+        <div class="mfield" style="margin-bottom:0"><label>Observacao</label><input type="text" id="ev-aereo-obs" placeholder="Horario preferido, bagagem, etc"/></div>
+      </div>
+    </div>
+    <div style="border:0.5px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
+      <div class="mfield" style="margin-bottom:0"><label>Aluguel de carro</label>
+        <select id="ev-carro" onchange="toggleTripDetail('carro')"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+      </div>
+      <div id="carro-detail" style="display:none;margin-top:10px">
+        <div class="mfield"><label>Local de retirada</label><input type="text" id="ev-carro-local" placeholder="Ex: Aeroporto de Navegantes"/></div>
+        <div class="mrow">
+          <div class="mfield"><label>Retirada</label><input type="date" id="ev-carro-retirada"/></div>
+          <div class="mfield"><label>Hora retirada</label><input type="time" id="ev-carro-retirada-hora"/></div>
+        </div>
+        <div class="mrow">
+          <div class="mfield"><label>Devolucao</label><input type="date" id="ev-carro-devolucao"/></div>
+          <div class="mfield"><label>Hora devolucao</label><input type="time" id="ev-carro-devolucao-hora"/></div>
+        </div>
+        <div class="mfield" style="margin-bottom:0"><label>Observacao</label><input type="text" id="ev-carro-obs" placeholder="Categoria do veiculo, etc"/></div>
       </div>
     </div>
     <div class="mactions">
@@ -644,6 +680,11 @@ function toggleRecurField(){
   const r=document.getElementById('ev-recur').value;
   document.getElementById('ev-recur-end-field').style.display=r!=='none'?'block':'none';
 }
+function toggleTripDetail(field){
+  const statusEl=document.getElementById('ev-'+field);
+  const detailEl=document.getElementById(field+'-detail');
+  if(statusEl&&detailEl)detailEl.style.display=statusEl.value==='na'?'none':'block';
+}
 function resetEventModal(){
   document.getElementById('ev-text').value='';
   document.getElementById('ev-period').value='T';
@@ -658,6 +699,22 @@ function resetEventModal(){
   document.getElementById('ev-hosp').value='na';
   document.getElementById('ev-carro').value='na';
   document.getElementById('ev-aereo').value='na';
+  document.getElementById('ev-hosp-checkin').value='';
+  document.getElementById('ev-hosp-checkout').value='';
+  document.getElementById('ev-hosp-local').value='';
+  document.getElementById('ev-hosp-obs').value='';
+  document.getElementById('ev-aereo-origem').value='';
+  document.getElementById('ev-aereo-destino').value='';
+  document.getElementById('ev-aereo-ida').value='';
+  document.getElementById('ev-aereo-volta').value='';
+  document.getElementById('ev-aereo-obs').value='';
+  document.getElementById('ev-carro-local').value='';
+  document.getElementById('ev-carro-retirada').value='';
+  document.getElementById('ev-carro-retirada-hora').value='';
+  document.getElementById('ev-carro-devolucao').value='';
+  document.getElementById('ev-carro-devolucao-hora').value='';
+  document.getElementById('ev-carro-obs').value='';
+  toggleTripDetail('hosp');toggleTripDetail('aereo');toggleTripDetail('carro');
   populateCentroSelect('');
   document.getElementById('ev-del-btn').style.display='none';
 }
@@ -695,6 +752,23 @@ function openEditEvent(id){
   document.getElementById('ev-hosp').value=e.hosp||'na';
   document.getElementById('ev-carro').value=e.carro||'na';
   document.getElementById('ev-aereo').value=e.aereo||'na';
+  const hd=e.hospDetail||{},ad=e.aereoDetail||{},cd=e.carroDetail||{};
+  document.getElementById('ev-hosp-checkin').value=hd.checkin||'';
+  document.getElementById('ev-hosp-checkout').value=hd.checkout||'';
+  document.getElementById('ev-hosp-local').value=hd.local||'';
+  document.getElementById('ev-hosp-obs').value=hd.obs||'';
+  document.getElementById('ev-aereo-origem').value=ad.origem||'';
+  document.getElementById('ev-aereo-destino').value=ad.destino||'';
+  document.getElementById('ev-aereo-ida').value=ad.ida||'';
+  document.getElementById('ev-aereo-volta').value=ad.volta||'';
+  document.getElementById('ev-aereo-obs').value=ad.obs||'';
+  document.getElementById('ev-carro-local').value=cd.local||'';
+  document.getElementById('ev-carro-retirada').value=cd.retirada||'';
+  document.getElementById('ev-carro-retirada-hora').value=cd.retiradaHora||'';
+  document.getElementById('ev-carro-devolucao').value=cd.devolucao||'';
+  document.getElementById('ev-carro-devolucao-hora').value=cd.devolucaoHora||'';
+  document.getElementById('ev-carro-obs').value=cd.obs||'';
+  toggleTripDetail('hosp');toggleTripDetail('aereo');toggleTripDetail('carro');
   populateCentroSelect(e.centro||'');
   document.getElementById('ev-del-btn').style.display='inline-flex';
   document.getElementById('modal-event').style.display='flex';
@@ -714,6 +788,27 @@ function saveEvent(){
   const carro=document.getElementById('ev-carro').value;
   const aereo=document.getElementById('ev-aereo').value;
   const centro=document.getElementById('ev-centro').value.trim();
+  const hospDetail={
+    checkin:document.getElementById('ev-hosp-checkin').value,
+    checkout:document.getElementById('ev-hosp-checkout').value,
+    local:document.getElementById('ev-hosp-local').value.trim(),
+    obs:document.getElementById('ev-hosp-obs').value.trim()
+  };
+  const aereoDetail={
+    origem:document.getElementById('ev-aereo-origem').value.trim(),
+    destino:document.getElementById('ev-aereo-destino').value.trim(),
+    ida:document.getElementById('ev-aereo-ida').value,
+    volta:document.getElementById('ev-aereo-volta').value,
+    obs:document.getElementById('ev-aereo-obs').value.trim()
+  };
+  const carroDetail={
+    local:document.getElementById('ev-carro-local').value.trim(),
+    retirada:document.getElementById('ev-carro-retirada').value,
+    retiradaHora:document.getElementById('ev-carro-retirada-hora').value,
+    devolucao:document.getElementById('ev-carro-devolucao').value,
+    devolucaoHora:document.getElementById('ev-carro-devolucao-hora').value,
+    obs:document.getElementById('ev-carro-obs').value.trim()
+  };
   if(!text||!date)return;
   let displayText=text, timeLabel='';
   if(period==='H'&&timeStart){
@@ -722,9 +817,9 @@ function saveEvent(){
   }
   if(editEventId){
     const e=events.find(x=>x.id===editEventId);
-    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;e.hosp=hosp;e.carro=carro;e.aereo=aereo;e.centro=centro;}
+    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;e.hosp=hosp;e.carro=carro;e.aereo=aereo;e.centro=centro;e.hospDetail=hospDetail;e.aereoDetail=aereoDetail;e.carroDetail=carroDetail;}
   } else {
-    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,recurGroup:null};
+    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,hospDetail,aereoDetail,carroDetail,recurGroup:null};
     if(recur==='none'||!recurEnd){
       events.push(baseEv);
     } else {
@@ -950,6 +1045,66 @@ function buildViagensResumo(){
     });
   });
   return txt;
+}
+function buildSolicitacaoLogistica(){
+  const hospList=events.filter(e=>e.hosp==='pendente').sort((a,b)=>a.date.localeCompare(b.date));
+  const aereoList=events.filter(e=>e.aereo==='pendente').sort((a,b)=>a.date.localeCompare(b.date));
+  const carroList=events.filter(e=>e.carro==='pendente').sort((a,b)=>a.date.localeCompare(b.date));
+  if(!hospList.length&&!aereoList.length&&!carroList.length){
+    return 'Nenhuma solicitacao de logistica pendente no momento.';
+  }
+  let txt='*Solicitacao de logistica de viagem*';
+  if(hospList.length){
+    txt+='\n\n*Hospedagem*';
+    hospList.forEach(e=>{
+      const d=e.hospDetail||{};
+      const local=d.local||e.location||e.text;
+      const periodo=(d.checkin?fmtDate(d.checkin):'?')+' a '+(d.checkout?fmtDate(d.checkout):'?');
+      txt+='\n- '+local+' — '+periodo;
+      if(e.centro)txt+='\n  Centro de custo: '+e.centro;
+      if(d.obs)txt+='\n  Obs: '+d.obs;
+    });
+  }
+  if(aereoList.length){
+    txt+='\n\n*Aereo*';
+    aereoList.forEach(e=>{
+      const d=e.aereoDetail||{};
+      const trecho=(d.origem||'?')+' -> '+(d.destino||'?');
+      let datas='Ida '+(d.ida?fmtDate(d.ida):'?');
+      if(d.volta)datas+=' / Volta '+fmtDate(d.volta);
+      txt+='\n- '+trecho+' — '+datas;
+      if(e.centro)txt+='\n  Centro de custo: '+e.centro;
+      if(d.obs)txt+='\n  Obs: '+d.obs;
+    });
+  }
+  if(carroList.length){
+    txt+='\n\n*Aluguel de carro*';
+    carroList.forEach(e=>{
+      const d=e.carroDetail||{};
+      const local=d.local||e.location||e.text;
+      const retiradaTxt=(d.retirada?fmtDate(d.retirada):'?')+(d.retiradaHora?' '+d.retiradaHora:'');
+      const devolucaoTxt=(d.devolucao?fmtDate(d.devolucao):'?')+(d.devolucaoHora?' '+d.devolucaoHora:'');
+      const periodo=retiradaTxt+' a '+devolucaoTxt;
+      txt+='\n- '+local+' — '+periodo;
+      if(e.centro)txt+='\n  Centro de custo: '+e.centro;
+      if(d.obs)txt+='\n  Obs: '+d.obs;
+    });
+  }
+  return txt;
+}
+function openSolicitacaoModal(){
+  document.getElementById('solicitacao-preview').textContent=buildSolicitacaoLogistica();
+  document.getElementById('modal-solicitacao').style.display='flex';
+}
+function copySolicitacao(){
+  const txt=buildSolicitacaoLogistica();
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
+  }).catch(()=>alert(txt));
+}
+function sendSolicitacao(){
+  const txt=buildSolicitacaoLogistica();
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 function openViagensResumoModal(){
   document.getElementById('viagens-resumo-preview').textContent=buildViagensResumo();
@@ -1186,6 +1341,20 @@ if(syncUrl)syncNow(false);
       <div class="mactions-right">
         <button class="btn-ghost" onclick="syncNow(true)">&#128260; Sincronizar agora</button>
         <button class="btn-primary" onclick="saveSyncUrl()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SOLICITACAO LOGISTICA MODAL -->
+<div class="overlay" id="modal-solicitacao" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
+    <h3>&#128241; Solicitar logistica de viagem</h3>
+    <div id="solicitacao-preview" style="background:var(--col-bg);border-radius:var(--rs);padding:12px;font-size:12px;font-family:'DM Mono',monospace;white-space:pre-wrap;line-height:1.6;max-height:340px;overflow-y:auto;margin-bottom:4px;color:var(--text)"></div>
+    <div class="mactions">
+      <button class="btn-ghost" onclick="document.getElementById('modal-solicitacao').style.display='none'">Fechar</button>
+      <div class="mactions-right">
+        <button class="btn-ghost" onclick="copySolicitacao()">&#128203; Copiar</button>
+        <button class="btn-primary" style="background:#25d366" onclick="sendSolicitacao()">&#128232; Enviar</button>
       </div>
     </div>
   </div>
