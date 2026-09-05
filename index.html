@@ -224,7 +224,7 @@ table.matriz tr.late-row td:first-child{box-shadow:inset 3px 0 0 #c0392b}
   <button class="nav-tab" onclick="showPage('viagens',this)">Viagens<span class="nav-badge zero" id="nav-badge-viagens">0</span></button>
   <div class="nav-right">
     <span id="saved-msg">salvo ✓</span>
-    <button class="nav-btn" onclick="openSyncModal()">&#128260; Sync</button>
+    <button class="nav-btn" onclick="openSyncModal()" style="display:inline-flex;align-items:center;gap:6px"><span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:#c8c5bb;flex-shrink:0"></span><span id="sync-dot-label">sem sync</span></button>
     <button class="nav-btn" onclick="openResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366">&#128232; Resumo</button>
     <button class="nav-btn" onclick="exportData()">&#11015; Export</button>
     <label class="nav-btn" style="cursor:pointer">&#11014; Import<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/></label>
@@ -494,7 +494,11 @@ table.matriz tr.late-row td:first-child{box-shadow:inset 3px 0 0 #c0392b}
 </div>
 <script>
 const TASK_KEY='alex-tasks-v3', EVENT_KEY='alex-events-v1', CC_KEY='alex-costcenters-v1', SYNC_KEY='alex-sync-url', UPDATED_KEY='alex-updated-at';
+const GRAVE_KEY='alex-graveyard-v1', BACKUP_KEY='alex-backups-v1';
+const GRAVE_TTL_DAYS=120, MAX_BACKUPS=8;
 let tasks=[], events=[], costCenters=[], syncUrl='';
+let graveyard={tasks:{},events:{},cc:{}};
+let syncState='off';
 let filter='todas', kfilter='todas', taskView='kanban', vfilter='abertas', vview='kanban';
 let dragId=null, dragTrip=null, editTaskId=null, editEventId=null;
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
@@ -517,6 +521,15 @@ const TRIP_LABEL={hosp:'Hospedagem',aereo:'Aereo',carro:'Aluguel de carro'};
 const TRIP_ICON={hosp:'\u{1F3E8}',aereo:'\u{2708}',carro:'\u{1F697}'};
 const MIGRATE={pendente:'solicitar',ok:'confirmado'};
 function todayStr(){return new Date().toISOString().slice(0,10)}
+function now(){return Date.now()}
+function touch(o){if(o)o.mtime=now();return o;}
+function bury(kind,id){graveyard[kind][String(id)]=now();}
+function pruneGrave(){
+  const cut=now()-GRAVE_TTL_DAYS*86400000;
+  ['tasks','events','cc'].forEach(k=>{
+    Object.keys(graveyard[k]||{}).forEach(id=>{if(graveyard[k][id]<cut)delete graveyard[k][id];});
+  });
+}
 function daysUntil(d){if(!d)return null;return Math.ceil((new Date(d+'T00:00:00')-new Date(new Date().toDateString()))/86400000)}
 function daysSince(d){if(!d)return null;return Math.floor((new Date(new Date().toDateString())-new Date(d+'T00:00:00'))/86400000)}
 function fmtDate(d){if(!d)return null;const[y,m,dd]=d.split('-');return dd+'/'+m+'/'+y}
@@ -541,22 +554,124 @@ function loadAll(){
   try{tasks=JSON.parse(localStorage.getItem(TASK_KEY))||[];}catch(e){tasks=[];}
   try{events=JSON.parse(localStorage.getItem(EVENT_KEY))||[];}catch(e){events=[];}
   try{costCenters=JSON.parse(localStorage.getItem(CC_KEY))||[];}catch(e){costCenters=[];}
+  try{graveyard=JSON.parse(localStorage.getItem(GRAVE_KEY))||{tasks:{},events:{},cc:{}};}catch(e){graveyard={tasks:{},events:{},cc:{}};}
+  ['tasks','events','cc'].forEach(k=>{if(!graveyard[k])graveyard[k]={};});
   tasks.forEach(t=>{if(!t.status)t.status=t.done?'done':'todo';});
   normalizeEvents();
+  pruneGrave();
 }
-function saveAll(){
+function persistLocal(bump){
   localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
   localStorage.setItem(EVENT_KEY,JSON.stringify(events));
   localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
-  localStorage.setItem(UPDATED_KEY,String(Date.now()));
+  localStorage.setItem(GRAVE_KEY,JSON.stringify(graveyard));
+  if(bump)localStorage.setItem(UPDATED_KEY,String(now()));
+}
+function saveAll(){
+  persistLocal(true);
   const el=document.getElementById('saved-msg');
   el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1400);
-  if(syncUrl)pushToRemote();
+  if(syncUrl){setSyncState('pending','Alteracao local ainda nao enviada.');pushToRemote(()=>setSyncState('ok','Enviado para a planilha.'));}
+}
+/* ===== BACKUP LOCAL (anel de 8) ===== */
+function cloneState(){return JSON.parse(JSON.stringify({tasks,events,costCenters,graveyard}));}
+function readBackups(){try{return JSON.parse(localStorage.getItem(BACKUP_KEY))||[];}catch(e){return[];}}
+function writeBackup(state,label){
+  try{
+    let b=readBackups();
+    b.unshift({ts:now(),label,state});
+    b=b.slice(0,MAX_BACKUPS);
+    localStorage.setItem(BACKUP_KEY,JSON.stringify(b));
+  }catch(e){/* quota: backup e best-effort */}
+  renderBackups();
+}
+function renderBackups(){
+  const el=document.getElementById('backup-list');
+  if(!el)return;
+  const b=readBackups();
+  el.innerHTML=b.length?b.map((s,i)=>{
+    const d=new Date(s.ts).toLocaleString('pt-BR');
+    const n=(s.state.events||[]).length+' eventos / '+(s.state.tasks||[]).length+' tarefas';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)">'+
+      '<div style="flex:1;min-width:0"><div style="font-size:12px">'+esc(d)+'</div>'+
+      '<div style="font-size:10px;color:var(--muted);font-family:DM Mono,monospace">'+esc(s.label)+' &middot; '+n+'</div></div>'+
+      '<button class="btn-ghost" style="height:30px;font-size:12px" onclick="restoreBackup('+i+')">Restaurar</button></div>';
+  }).join(''):'<div style="font-size:12px;color:var(--muted)">Nenhum backup ainda. Sao criados automaticamente antes de cada sincronizacao que altera dados.</div>';
+}
+function restoreBackup(i){
+  const b=readBackups()[i];
+  if(!b)return;
+  if(!confirm('Restaurar o backup de '+new Date(b.ts).toLocaleString('pt-BR')+'?\n\nO estado atual deste aparelho sera salvo como um novo backup antes.'))return;
+  writeBackup(cloneState(),'antes de restaurar');
+  tasks=b.state.tasks||[];events=b.state.events||[];costCenters=b.state.costCenters||[];
+  graveyard=b.state.graveyard||{tasks:{},events:{},cc:{}};
+  ['tasks','events','cc'].forEach(k=>{if(!graveyard[k])graveyard[k]={};});
+  normalizeEvents();
+  persistLocal(true);renderAll();
+  if(syncUrl)pushToRemote(()=>setSyncState('ok','Backup restaurado e enviado.'));
+  updateSyncStatus('Backup restaurado.');
+}
+/* ===== MERGE POR REGISTRO ===== */
+function mergeGrave(a,b){
+  const out=Object.assign({},a||{});
+  Object.keys(b||{}).forEach(k=>{if((b[k]||0)>(out[k]||0))out[k]=b[k];});
+  return out;
+}
+function mergeById(localArr,remoteArr,grave){
+  const m=new Map();
+  const put=r=>{
+    if(!r||r.id===undefined||r.id===null)return;
+    const k=String(r.id);
+    const cur=m.get(k);
+    if(!cur||(r.mtime||0)>(cur.mtime||0))m.set(k,r);
+  };
+  (localArr||[]).forEach(put);
+  (remoteArr||[]).forEach(put);
+  const out=[];
+  m.forEach((r,k)=>{
+    const dt=grave[k]||0;
+    if(dt&&dt>=(r.mtime||0))return;
+    out.push(r);
+  });
+  return out;
+}
+function mergeState(remote){
+  const rg=remote.graveyard||{tasks:{},events:{},cc:{}};
+  const g={
+    tasks:mergeGrave(graveyard.tasks,rg.tasks),
+    events:mergeGrave(graveyard.events,rg.events),
+    cc:mergeGrave(graveyard.cc,rg.cc)
+  };
+  tasks=mergeById(tasks,remote.tasks,g.tasks);
+  events=mergeById(events,remote.events,g.events);
+  const set=[];
+  [].concat(costCenters||[],remote.costCenters||[]).forEach(c=>{if(c&&set.indexOf(c)<0&&!g.cc[c])set.push(c);});
+  costCenters=set;
+  graveyard=g;
+  tasks.forEach(t=>{if(!t.status)t.status=t.done?'done':'todo';});
+  normalizeEvents();
+  pruneGrave();
+}
+function stateSig(t,e,c){
+  const s=a=>JSON.stringify((a||[]).slice().sort((x,y)=>String(x&&x.id).localeCompare(String(y&&y.id))));
+  return s(t)+'|'+s(e)+'|'+JSON.stringify((c||[]).slice().sort());
+}
+function setSyncState(st,msg){
+  syncState=st;
+  const el=document.getElementById('sync-dot');
+  if(!el)return;
+  const map={off:['#c8c5bb','sem sync'],ok:['#3a7a3a','sincronizado'],pending:['#c98a1e','enviando...'],syncing:['#0c447c','sincronizando...'],err:['#c0392b','erro de sync']};
+  const[color,label]=map[st]||map.off;
+  el.style.background=color;
+  el.title=(msg||label);
+  const lb=document.getElementById('sync-dot-label');
+  if(lb)lb.textContent=label;
 }
 // SYNC (Google Sheets via Apps Script)
 function openSyncModal(){
   document.getElementById('sync-url-input').value=syncUrl;
   updateSyncStatus(syncUrl?'Configurado. Toque em "Sincronizar agora" para testar.':'Nenhuma URL configurada ainda.');
+  renderBackups();
   document.getElementById('modal-sync').style.display='flex';
 }
 function updateSyncStatus(msg){
@@ -579,48 +694,60 @@ function forcePush(){
 }
 function forcePull(){
   if(!syncUrl){updateSyncStatus('Configure a URL primeiro.');return;}
-  if(!confirm('Isso vai SUBSTITUIR os dados deste aparelho pelos dados da planilha. Continuar?'))return;
+  if(!confirm('Isso vai DESCARTAR os dados deste aparelho e ficar so com os da planilha.\n\nNa maioria dos casos voce quer "Sincronizar agora", que junta os dois sem perder nada. Continuar mesmo assim?'))return;
   updateSyncStatus('Buscando...');
   fetch(syncUrl).then(r=>r.json()).then(remote=>{
+    writeBackup(cloneState(),'antes de buscar da planilha');
     tasks=remote.tasks||[];events=remote.events||[];costCenters=remote.costCenters||[];
+    graveyard=remote.graveyard||{tasks:{},events:{},cc:{}};
+    ['tasks','events','cc'].forEach(k=>{if(!graveyard[k])graveyard[k]={};});
     normalizeEvents();
-    localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
-    localStorage.setItem(EVENT_KEY,JSON.stringify(events));
-    localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
-    localStorage.setItem(UPDATED_KEY,String(remote.updatedAt||Date.now()));
+    persistLocal(true);
     renderAll();
-    updateSyncStatus('Dados da planilha aplicados neste aparelho.');
-  }).catch(()=>updateSyncStatus('Erro ao buscar da planilha. Confira a URL e a publicacao do script.'));
+    setSyncState('ok','Dados da planilha aplicados.');
+    updateSyncStatus('Dados da planilha aplicados. Um backup do estado anterior foi guardado abaixo.');
+  }).catch(()=>{setSyncState('err');updateSyncStatus('Erro ao buscar da planilha. Confira a URL e a publicacao do script.');});
 }
 function pushToRemote(cb){
   if(!syncUrl)return;
-  const payload={tasks,events,costCenters,updatedAt:Number(localStorage.getItem(UPDATED_KEY)||Date.now())};
+  const payload={tasks,events,costCenters,graveyard,updatedAt:Number(localStorage.getItem(UPDATED_KEY)||Date.now())};
   fetch(syncUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
-    .then(r=>r.json()).then(()=>{if(cb)cb();})
-    .catch(()=>updateSyncStatus('Erro ao enviar para a planilha. Confira a URL e a publicacao do script.'));
+    .then(r=>r.json()).then(()=>{setSyncState('ok');if(cb)cb();})
+    .catch(()=>{setSyncState('err','Nao consegui enviar para a planilha. Os dados estao salvos neste aparelho.');updateSyncStatus('Erro ao enviar para a planilha. Confira a URL e a publicacao do script.');});
 }
 function syncNow(manual){
   if(!syncUrl){if(manual)updateSyncStatus('Nenhuma URL configurada.');return;}
+  setSyncState('syncing');
   if(manual)updateSyncStatus('Sincronizando...');
   fetch(syncUrl).then(r=>r.json()).then(remote=>{
-    const localUpdatedAt=Number(localStorage.getItem(UPDATED_KEY)||0);
-    const remoteUpdatedAt=Number(remote.updatedAt||0);
-    if(remoteUpdatedAt>localUpdatedAt){
-      tasks=remote.tasks||[];events=remote.events||[];costCenters=remote.costCenters||[];
-      normalizeEvents();
-      localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
-      localStorage.setItem(EVENT_KEY,JSON.stringify(events));
-      localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
-      localStorage.setItem(UPDATED_KEY,String(remoteUpdatedAt));
+    const pre=cloneState();
+    const sigLocalBefore=stateSig(tasks,events,costCenters);
+    const sigRemote=stateSig(remote.tasks,remote.events,remote.costCenters);
+    mergeState(remote);
+    const sigMerged=stateSig(tasks,events,costCenters);
+    const localChanged=sigMerged!==sigLocalBefore;
+    const remoteStale=sigMerged!==sigRemote;
+    if(localChanged){
+      writeBackup(pre,'antes de sincronizar');
+      persistLocal(false);
       renderAll();
-      updateSyncStatus('Dados atualizados da planilha — '+new Date(remoteUpdatedAt).toLocaleString('pt-BR'));
-    } else if(localUpdatedAt>remoteUpdatedAt){
-      pushToRemote(()=>updateSyncStatus('Enviado para a planilha — '+new Date(localUpdatedAt).toLocaleString('pt-BR')));
-    } else if(manual){
-      updateSyncStatus('Ja esta tudo sincronizado.');
+    }
+    if(remoteStale){
+      localStorage.setItem(UPDATED_KEY,String(now()));
+      persistLocal(false);
+      setSyncState('pending');
+      pushToRemote(()=>{
+        setSyncState('ok');
+        updateSyncStatus(localChanged?'Dados juntados: recebi da planilha e enviei o que faltava la.':'Enviado para a planilha o que faltava.');
+      });
+    } else {
+      setSyncState('ok');
+      if(localChanged)updateSyncStatus('Dados da planilha incorporados sem perder nada daqui.');
+      else if(manual)updateSyncStatus('Ja esta tudo sincronizado.');
     }
   }).catch(()=>{
-    if(manual)updateSyncStatus('Erro ao conectar. Confira a URL e se o script foi publicado como "qualquer pessoa com o link".');
+    setSyncState('err','Sem conexao com a planilha. Nada foi alterado aqui.');
+    if(manual)updateSyncStatus('Erro ao conectar. Confira a URL e se o script foi publicado como "qualquer pessoa com o link". Seus dados locais nao foram alterados.');
   });
 }
 function renderAll(){
@@ -642,7 +769,8 @@ function importData(ev){
     try{
       const data=JSON.parse(e.target.result);
       if(!data.tasks&&!data.events){alert('Arquivo invalido.');return;}
-      if(!confirm('Substituir todos os dados atuais?'))return;
+      if(!confirm('Substituir todos os dados atuais? (um backup do estado atual sera guardado)'))return;
+      writeBackup(cloneState(),'antes de importar');
       if(data.tasks)tasks=data.tasks;
       if(data.events)events=data.events;
       if(data.costCenters)costCenters=data.costCenters;
@@ -659,7 +787,7 @@ function addTask(){
   const t=document.getElementById('new-title').value.trim();
   if(!t){document.getElementById('new-title').focus();return;}
   const status=document.getElementById('new-status').value;
-  tasks.unshift({id:Date.now(),title:t,frente:document.getElementById('new-frente').value,pri:document.getElementById('new-pri').value,due:document.getElementById('new-due').value||null,obs:document.getElementById('new-obs').value.trim(),status,done:status==='done',doneAt:status==='done'?todayStr():null,created:todayStr()});
+  tasks.unshift({id:Date.now(),mtime:now(),title:t,frente:document.getElementById('new-frente').value,pri:document.getElementById('new-pri').value,due:document.getElementById('new-due').value||null,obs:document.getElementById('new-obs').value.trim(),status,done:status==='done',doneAt:status==='done'?todayStr():null,created:todayStr()});
   document.getElementById('new-title').value='';document.getElementById('new-due').value='';document.getElementById('new-obs').value='';
   saveAll();renderTasks();
 }
@@ -668,8 +796,8 @@ function toggleObs(id){
   const el=document.getElementById('obs-'+id);
   if(el)el.style.display=el.style.display==='none'?'block':'none';
 }
-function moveTask(id,ns){const t=tasks.find(x=>x.id===id);if(!t)return;t.status=ns;t.done=ns==='done';t.doneAt=ns==='done'?todayStr():null;saveAll();renderTasks();}
-function removeTask(id){if(!confirm('Excluir esta tarefa?'))return;tasks=tasks.filter(x=>x.id!==id);saveAll();renderTasks();}
+function moveTask(id,ns){const t=tasks.find(x=>x.id===id);if(!t)return;t.status=ns;t.done=ns==='done';t.doneAt=ns==='done'?todayStr():null;touch(t);saveAll();renderTasks();}
+function removeTask(id){if(!confirm('Excluir esta tarefa?'))return;bury('tasks',id);tasks=tasks.filter(x=>x.id!==id);saveAll();renderTasks();}
 function openEdit(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
   editTaskId=id;
@@ -690,6 +818,7 @@ function saveTaskEdit(){
   t.due=document.getElementById('e-due').value||null;
   t.obs=document.getElementById('e-obs').value.trim();
   t.status=ns;t.done=ns==='done';t.doneAt=ns==='done'?(t.doneAt||todayStr()):null;
+  touch(t);
   document.getElementById('modal-task').style.display='none';
   saveAll();renderTasks();
 }
@@ -918,6 +1047,7 @@ function saveEvent(){
         if(e[f]!==nv)stampHist(e,f,nv);
       });
       e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;e.hosp=hosp;e.carro=carro;e.aereo=aereo;e.centro=centro;e.hospDetail=hospDetail;e.aereoDetail=aereoDetail;e.carroDetail=carroDetail;
+      touch(e);
     }
   } else {
     const stamp={};
@@ -925,7 +1055,7 @@ function saveEvent(){
       const v={hosp:hosp,aereo:aereo,carro:carro}[f];
       stamp[f+'Hist']=(v&&v!=='na')?{[v]:todayStr()}:{};
     });
-    const baseEv=Object.assign({id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,hospDetail,aereoDetail,carroDetail,recurGroup:null},stamp);
+    const baseEv=Object.assign({id:Date.now(),mtime:now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,hospDetail,aereoDetail,carroDetail,recurGroup:null},stamp);
     if(recur==='none'||!recurEnd){
       events.push(baseEv);
     } else {
@@ -955,9 +1085,10 @@ function removeEvent(id){
   const ev=events.find(e=>e.id===id);
   if(ev&&ev.recurGroup){
     if(confirm('Evento recorrente. Excluir todas as ocorrencias?')){
+      events.forEach(e=>{if(e.recurGroup===ev.recurGroup)bury('events',e.id);});
       events=events.filter(e=>e.recurGroup!==ev.recurGroup);
-    } else {events=events.filter(e=>e.id!==id);}
-  } else {events=events.filter(e=>e.id!==id);}
+    } else {bury('events',id);events=events.filter(e=>e.id!==id);}
+  } else {bury('events',id);events=events.filter(e=>e.id!==id);}
   saveAll();renderCal();renderViagens();
   if(selectedDate)renderDayPanel(selectedDate);
 }
@@ -1067,12 +1198,14 @@ function addCostCenter(){
   const inp=document.getElementById('new-cc');
   const v=inp.value.trim();
   if(!v)return;
+  delete graveyard.cc[v];
   if(!costCenters.includes(v))costCenters.push(v);
   inp.value='';
   saveAll();renderCostCenters();
 }
 function removeCostCenter(idx){
   if(!confirm('Remover este centro de custo da lista? Eventos ja marcados com ele nao serao alterados.'))return;
+  bury('cc',costCenters[idx]);
   costCenters.splice(idx,1);
   saveAll();renderCostCenters();
 }
@@ -1163,7 +1296,7 @@ function setVView(v){
 function updateTripField(id,field,value){
   const e=events.find(x=>x.id===id);if(!e)return;
   if(e[field]!==value)stampHist(e,field,value);
-  e[field]=value;
+  e[field]=value;touch(e);
   saveAll();renderViagens();renderCal();if(selectedDate)renderDayPanel(selectedDate);
 }
 function advanceTrip(id,field){
@@ -1335,7 +1468,7 @@ function markAllAsSolicitado(){
   const items=tripItems().filter(i=>i.status==='solicitar');
   if(!items.length)return;
   if(!confirm('Marcar os '+items.length+' item(ns) como "Solicitado" com a data de hoje?'))return;
-  items.forEach(i=>{stampHist(i.ev,i.field,'solicitado');i.ev[i.field]='solicitado';});
+  items.forEach(i=>{stampHist(i.ev,i.field,'solicitado');i.ev[i.field]='solicitado';touch(i.ev);});
   saveAll();renderViagens();renderCal();if(selectedDate)renderDayPanel(selectedDate);
   document.getElementById('solicitacao-preview').textContent=buildSolicitacaoLogistica();
 }
@@ -1559,7 +1692,9 @@ function cleanOldDone(){
   const before=tasks.length;
   tasks=tasks.filter(t=>{
     if(!t.done||!t.doneAt)return true;
-    return new Date(t.doneAt+'T00:00:00')>=cutoff;
+    const keep=new Date(t.doneAt+'T00:00:00')>=cutoff;
+    if(!keep)bury('tasks',t.id);
+    return keep;
   });
   if(tasks.length<before)saveAll();
 }
@@ -1572,7 +1707,9 @@ renderCal();
 renderCostCenters();
 renderViagens();
 syncUrl=localStorage.getItem(SYNC_KEY)||'';
+setSyncState(syncUrl?'syncing':'off');
 if(syncUrl)syncNow(false);
+window.addEventListener('online',()=>{if(syncUrl)syncNow(false);});
 </script>
 <!-- RESUMO MODAL -->
 <div class="overlay" id="modal-resumo" style="display:none" onclick="if(event.target===this)this.style.display='none'">
@@ -1625,7 +1762,9 @@ if(syncUrl)syncNow(false);
       <button class="btn-ghost" style="flex:1;min-width:150px" onclick="forcePush()">&#11014; Enviar deste aparelho</button>
       <button class="btn-ghost" style="flex:1;min-width:150px" onclick="forcePull()">&#11015; Buscar da planilha</button>
     </div>
-    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:16px">Use "Enviar" no aparelho que ja tem os dados certos (normalmente na primeira vez). Use "Buscar" nos outros aparelhos pra puxar o que ja esta na planilha. Depois disso, o painel sincroniza sozinho a cada alteracao.</div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:16px"><strong>"Sincronizar agora" junta os dois lados</strong> (merge por registro, o mais recente vence) e nunca apaga um item que so existe aqui. Os dois botoes acima sao destrutivos e so devem ser usados para forcar um lado inteiro sobre o outro.</div>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Backups locais</div>
+    <div id="backup-list" style="margin-bottom:16px;max-height:180px;overflow-y:auto"></div>
     <div class="mactions">
       <button class="btn-ghost" onclick="document.getElementById('modal-sync').style.display='none'">Fechar</button>
       <div class="mactions-right">
