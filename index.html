@@ -16,18 +16,21 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .nav{display:flex;align-items:center;border-bottom:0.5px solid var(--border);background:var(--surface);padding:0 1.5rem;position:sticky;top:0;z-index:50;gap:0}
 .nav-title{font-size:15px;font-weight:500;margin-right:1.5rem;padding:13px 0;letter-spacing:-.3px;white-space:nowrap}
-.nav-tab{font-size:14px;padding:0 16px;height:48px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px;display:flex;align-items:center}
+.nav-tab{font-size:14px;padding:0 16px;height:48px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px;display:flex;align-items:center;position:relative}
 .nav-tab:hover{color:var(--text)}
 .nav-tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:500}
+.nav-badge{font-size:10px;font-family:'DM Mono',monospace;background:#c0392b;color:#fff;border-radius:20px;padding:1px 6px;margin-left:6px;line-height:1.5}
+.nav-badge.zero{display:none}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 #saved-msg{font-size:12px;color:#5a8a5a;font-family:'DM Mono',monospace;opacity:0;transition:opacity .3s}
 #saved-msg.show{opacity:1}
 .nav-btn{height:28px;padding:0 10px;border:0.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;white-space:nowrap}
 .nav-btn:hover{background:var(--col-bg)}
-.page{display:none;padding:1.5rem;max-width:1100px;margin:0 auto}
+.page{display:none;padding:1.5rem;max-width:1180px;margin:0 auto}
 .page.active{display:block}
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem}
+.stats5{grid-template-columns:repeat(5,1fr)}
 .stat{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:10px 12px}
 .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .stat-val{font-size:20px;font-weight:500;font-family:'DM Mono',monospace}
@@ -53,11 +56,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .vbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 /* KANBAN */
 .kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start}
+.kanban4{grid-template-columns:repeat(4,1fr)}
 .k-col{background:var(--col-bg);border-radius:var(--r);padding:10px;min-height:160px}
-.k-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.k-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px;gap:6px}
 .k-col-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
 .k-count{font-size:12px;font-family:'DM Mono',monospace;background:var(--border);color:var(--muted);border-radius:20px;padding:1px 8px}
 .k-cards{display:flex;flex-direction:column;gap:6px;min-height:40px}
+.k-col-bar{height:3px;border-radius:3px;margin:-4px 2px 8px}
 /* CARDS */
 .task-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:11px 12px;display:flex;align-items:flex-start;gap:9px;transition:border-color .15s}
 .task-card:hover{border-color:var(--bh)}
@@ -78,8 +83,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge-pri-alta{background:#fce8e8;color:#791f1f}
 .badge-pri-media{background:#fdf0dc;color:#633806}
 .badge-pri-baixa{background:#eaf3de;color:#27500a}
-.badge-pend{background:#fce8e8;color:#791f1f}
-.badge-ok{background:#eaf3de;color:#27500a}
 .due-tag{font-size:10px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:20px;border:0.5px solid var(--border);color:var(--muted)}
 .due-tag.overdue{background:#fce8e8;color:#791f1f;border-color:transparent}
 .due-tag.soon{background:#fdf0dc;color:#633806;border-color:transparent}
@@ -96,6 +99,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .task-card.dragging{opacity:.35}
 .k-col.drag-over{outline:2px dashed var(--bh);outline-offset:-4px}
 .list-view{display:flex;flex-direction:column;gap:6px}
+/* STATUS DE LOGISTICA */
+.st-na{background:#f0efeb;color:#77756e}
+.st-solicitar{background:#fce8e8;color:#791f1f}
+.st-solicitado{background:#e3eef9;color:#0c447c}
+.st-aprovacao{background:#fdf0dc;color:#633806}
+.st-confirmado{background:#eaf3de;color:#27500a}
+.st-chip{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;font-family:'DM Mono',monospace;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.st-late{background:#c0392b;color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-family:'DM Mono',monospace;font-weight:500}
+.st-sel{height:32px;padding:0 6px;border:none;border-radius:20px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;cursor:pointer;outline:none;width:100%;min-width:118px;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
+.st-sel:focus{box-shadow:0 0 0 2px var(--bh)}
+.trip-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:10px 11px;transition:border-color .15s}
+.trip-card:hover{border-color:var(--bh)}
+.trip-card.late{border-left:3px solid #c0392b}
+.trip-card.dragging{opacity:.35}
+.trip-head{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.trip-type{font-size:11px;font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.3px}
+.trip-title{font-size:13px;line-height:1.35;word-break:break-word}
+.trip-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:3px}
+.trip-foot{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:7px}
+.trip-btns{display:flex;gap:2px;margin-left:auto}
+.legend{font-size:11px;color:var(--muted);line-height:1.6;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:1rem}
+/* MATRIZ */
+.matriz-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow-x:auto}
+table.matriz{width:100%;border-collapse:collapse;min-width:820px}
+table.matriz th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:500;text-align:left;padding:10px 10px;border-bottom:0.5px solid var(--border);white-space:nowrap}
+table.matriz td{padding:8px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;font-size:13px}
+table.matriz tr:last-child td{border-bottom:none}
+table.matriz tr.late-row td:first-child{box-shadow:inset 3px 0 0 #c0392b}
+.mz-date{font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap}
+.mz-ev{line-height:1.35}
+.mz-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.mz-cell{min-width:130px}
+.mz-aging{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:3px;display:block;text-align:center}
+.mz-aging.late{color:#c0392b;font-weight:500}
 /* AGENDA */
 .agenda-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px}
 .month-nav{display:flex;align-items:center;gap:8px}
@@ -110,7 +147,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .cal-day.other-month{background:var(--col-bg);opacity:.45}
 .cal-day.today{border-color:var(--green);border-width:1.5px}
 .cal-day.today .day-num{color:var(--green);font-weight:600}
-.trip-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#c0392b;box-shadow:0 0 0 2px var(--surface)}
+.trip-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;box-shadow:0 0 0 2px var(--surface)}
+.trip-dot.red{background:#c0392b}
+.trip-dot.amber{background:#c98a1e}
 .day-num{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:3px}
 .day-events{display:flex;flex-direction:column;gap:2px}
 .day-event{font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
@@ -144,7 +183,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mfield input:focus,.mfield select:focus{border-color:var(--bh)}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mrow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.mactions{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+.mactions{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:8px;flex-wrap:wrap}
 .mactions-right{display:flex;gap:8px}
 .btn-ghost{height:38px;padding:0 14px;border:0.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
 .btn-danger{height:38px;padding:0 14px;border:none;border-radius:var(--rs);background:#fce8e8;color:#791f1f;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
@@ -153,10 +192,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* MOBILE */
 @media(max-width:640px){
   .page{padding:.75rem}
-  .kanban{grid-template-columns:1fr}
-  .stats{grid-template-columns:repeat(2,1fr)}
+  .kanban,.kanban4{grid-template-columns:1fr}
+  .stats,.stats5{grid-template-columns:repeat(2,1fr)}
   .nav{padding:0 1rem}
   .nav-title{font-size:14px;margin-right:.75rem}
+  .nav-tab{padding:0 11px}
   .add-r2{flex-direction:column;align-items:stretch}
   .add-section input[type=text],.add-section input[type=date],.add-section select,.btn-add{width:100%;height:44px;font-size:15px}
   #new-title{min-width:unset}
@@ -172,6 +212,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .month-label{font-size:15px;min-width:130px}
   .vtog .vbtn{height:38px;font-size:14px}
   .nav-btn{height:32px;font-size:12px}
+  .st-sel{height:38px;font-size:12px}
 }
 </style>
 </head>
@@ -180,7 +221,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <span class="nav-title">Painel</span>
   <button class="nav-tab active" onclick="showPage('tasks',this)">Tarefas</button>
   <button class="nav-tab" onclick="showPage('agenda',this)">Agenda</button>
-  <button class="nav-tab" onclick="showPage('viagens',this)">Viagens</button>
+  <button class="nav-tab" onclick="showPage('viagens',this)">Viagens<span class="nav-badge zero" id="nav-badge-viagens">0</span></button>
   <div class="nav-right">
     <span id="saved-msg">salvo ✓</span>
     <button class="nav-btn" onclick="openSyncModal()">&#128260; Sync</button>
@@ -279,12 +320,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 <!-- VIAGENS -->
 <div id="page-viagens" class="page">
-  <div class="stats" style="margin-bottom:1.25rem">
-    <div class="stat"><div class="stat-label">Viagens marcadas</div><div class="stat-val" id="v-total">0</div></div>
-    <div class="stat"><div class="stat-label">Pendencias</div><div class="stat-val" id="v-pend" style="color:#791f1f">0</div></div>
-    <div class="stat"><div class="stat-label">Vencidas</div><div class="stat-val" id="v-overdue" style="color:#c0392b">0</div></div>
+  <div class="stats stats5" style="margin-bottom:1.25rem">
+    <div class="stat"><div class="stat-label">Solicitacoes</div><div class="stat-val" id="v-total">0</div></div>
+    <div class="stat"><div class="stat-label">A solicitar</div><div class="stat-val" id="v-solicitar" style="color:#791f1f">0</div></div>
+    <div class="stat"><div class="stat-label">Solicitado</div><div class="stat-val" id="v-solicitado" style="color:#0c447c">0</div></div>
+    <div class="stat"><div class="stat-label">Aguard. aprov.</div><div class="stat-val" id="v-aprovacao" style="color:#633806">0</div></div>
+    <div class="stat"><div class="stat-label">Em atraso</div><div class="stat-val" id="v-atraso" style="color:#c0392b">0</div></div>
   </div>
-  <div class="add-section">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+    <div class="vtog">
+      <button class="vbtn active" id="btn-vkanban" onclick="setVView('kanban')">Fluxo</button>
+      <button class="vbtn" id="btn-vmatriz" onclick="setVView('matriz')">Matriz</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="nav-btn" onclick="openSolicitacaoModal()" style="background:#0c447c;color:#fff;border-color:#0c447c;white-space:nowrap;height:36px">&#128241; Solicitar logistica</button>
+      <button class="nav-btn" onclick="openViagensResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366;white-space:nowrap;height:36px">&#128203; Status WhatsApp</button>
+      <button class="nav-btn" onclick="toggleCCPanel()" style="white-space:nowrap;height:36px">&#9881; Centros de custo</button>
+    </div>
+  </div>
+  <div class="add-section" id="cc-panel" style="display:none">
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Centros de custo cadastrados</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <input type="text" id="new-cc" placeholder="Novo centro de custo (ex: 01929 - Sistema de Producao Tupy 2026)" style="flex:1;min-width:220px"/>
@@ -292,17 +346,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div id="cc-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
   </div>
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
-    <div class="filters" id="viagens-filters" style="flex:1">
-      <button class="fbtn active" onclick="setVFilter('pendentes',this)">Pendentes</button>
-      <button class="fbtn" onclick="setVFilter('vencidas',this)">Vencidas</button>
-      <button class="fbtn" onclick="setVFilter('resolvidas',this)">Resolvidas</button>
-      <button class="fbtn" onclick="setVFilter('todas',this)">Todas</button>
-    </div>
-    <button class="nav-btn" onclick="openSolicitacaoModal()" style="background:#0c447c;color:#fff;border-color:#0c447c;white-space:nowrap;height:36px">&#128241; Solicitar logistica</button>
-    <button class="nav-btn" onclick="openViagensResumoModal()" style="background:#25d366;color:#fff;border-color:#25d366;white-space:nowrap;height:36px">&#128203; Relatorio WhatsApp</button>
+  <div class="filters" id="viagens-filters">
+    <button class="fbtn active" onclick="setVFilter('abertas',this)">Em aberto</button>
+    <button class="fbtn" onclick="setVFilter('atrasadas',this)">Em atraso</button>
+    <button class="fbtn" onclick="setVFilter('proximas',this)">Proximos 30 dias</button>
+    <button class="fbtn" onclick="setVFilter('confirmadas',this)">Confirmadas</button>
+    <button class="fbtn" onclick="setVFilter('todas',this)">Todas</button>
   </div>
-  <div class="list-view" id="viagens-list"></div>
+  <div class="legend">
+    <strong>Fluxo:</strong> A solicitar &rarr; Solicitado &rarr; Aguardando aprovacao &rarr; Confirmado. Arraste os cards entre as colunas ou use o botao &rarr; para avancar.<br>
+    <strong>Alerta de atraso</strong> quando: solicitado ha mais de <span id="lg-sla1">3</span> dias sem retorno, aguardando aprovacao ha mais de <span id="lg-sla2">5</span> dias, ainda "a solicitar" faltando <span id="lg-sla3">7</span> dias ou menos para a viagem, ou a data ja passou sem confirmacao.
+  </div>
+  <div id="viagens-kanban">
+    <div class="kanban kanban4" id="viagens-kanban-cols"></div>
+  </div>
+  <div id="viagens-matriz" style="display:none">
+    <div class="matriz-wrap"><table class="matriz" id="matriz-table"></table></div>
+  </div>
 </div>
 <!-- TASK MODAL -->
 <div class="overlay" id="modal-task" style="display:none" onclick="if(event.target===this)this.style.display='none'">
@@ -379,7 +439,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px">Logistica de viagem</div>
     <div style="border:0.5px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
       <div class="mfield" style="margin-bottom:0"><label>Hospedagem</label>
-        <select id="ev-hosp" onchange="toggleTripDetail('hosp')"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+        <select id="ev-hosp" onchange="toggleTripDetail('hosp')"></select>
       </div>
       <div id="hosp-detail" style="display:none;margin-top:10px">
         <div class="mrow">
@@ -387,12 +447,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <div class="mfield"><label>Check-out</label><input type="date" id="ev-hosp-checkout"/></div>
         </div>
         <div class="mfield"><label>Cidade / local</label><input type="text" id="ev-hosp-local" placeholder="Ex: Blumenau, perto da Vidrolar"/></div>
-        <div class="mfield" style="margin-bottom:0"><label>Observacao</label><input type="text" id="ev-hosp-obs" placeholder="Nº de diarias, preferencias, etc"/></div>
+        <div class="mfield" style="margin-bottom:0"><label>Observacao</label><input type="text" id="ev-hosp-obs" placeholder="N&ordm; de diarias, preferencias, etc"/></div>
       </div>
     </div>
     <div style="border:0.5px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
       <div class="mfield" style="margin-bottom:0"><label>Aereo</label>
-        <select id="ev-aereo" onchange="toggleTripDetail('aereo')"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+        <select id="ev-aereo" onchange="toggleTripDetail('aereo')"></select>
       </div>
       <div id="aereo-detail" style="display:none;margin-top:10px">
         <div class="mrow">
@@ -408,7 +468,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div style="border:0.5px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
       <div class="mfield" style="margin-bottom:0"><label>Aluguel de carro</label>
-        <select id="ev-carro" onchange="toggleTripDetail('carro')"><option value="na">N/A</option><option value="pendente">Pendente</option><option value="ok">OK</option></select>
+        <select id="ev-carro" onchange="toggleTripDetail('carro')"></select>
       </div>
       <div id="carro-detail" style="display:none;margin-top:10px">
         <div class="mfield"><label>Local de retirada</label><input type="text" id="ev-carro-local" placeholder="Ex: Aeroporto de Navegantes"/></div>
@@ -435,16 +495,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <script>
 const TASK_KEY='alex-tasks-v3', EVENT_KEY='alex-events-v1', CC_KEY='alex-costcenters-v1', SYNC_KEY='alex-sync-url', UPDATED_KEY='alex-updated-at';
 let tasks=[], events=[], costCenters=[], syncUrl='';
-let filter='todas', kfilter='todas', taskView='kanban', vfilter='pendentes';
-let dragId=null, editTaskId=null, editEventId=null;
+let filter='todas', kfilter='todas', taskView='kanban', vfilter='abertas', vview='kanban';
+let dragId=null, dragTrip=null, editTaskId=null, editEventId=null;
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 let selectedDate=null;
 const LABELS={produttare:'Produttare',iomt:'i-OMT',mestrado:'Mestrado',ind4:'Ind. 4.0',pessoal:'Pessoal'};
 const PRI={alta:'Alta',media:'Media',baixa:'Baixa'};
 const MONTHS=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const DOWS=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+/* ===== MODELO DE STATUS DE LOGISTICA ===== */
+const FLOW=['solicitar','solicitado','aprovacao','confirmado'];
+const TS_ALL=['na'].concat(FLOW);
+const TS_LABEL={na:'N/A',solicitar:'A solicitar',solicitado:'Solicitado',aprovacao:'Aguardando aprovacao',confirmado:'Confirmado'};
+const TS_SHORT={na:'—',solicitar:'A solicitar',solicitado:'Solicitado',aprovacao:'Em aprovacao',confirmado:'Confirmado'};
+const TS_CLASS={na:'st-na',solicitar:'st-solicitar',solicitado:'st-solicitado',aprovacao:'st-aprovacao',confirmado:'st-confirmado'};
+const TS_BAR={solicitar:'#c0392b',solicitado:'#0c447c',aprovacao:'#c98a1e',confirmado:'#3a7a3a'};
+const SLA={solicitado:3,aprovacao:5};
+const LEAD_ALERT=7;
+const TRIP_FIELDS=[['hosp','Hospedagem','\u{1F3E8}'],['aereo','Aereo','\u{2708}'],['carro','Carro','\u{1F697}']];
+const TRIP_LABEL={hosp:'Hospedagem',aereo:'Aereo',carro:'Aluguel de carro'};
+const TRIP_ICON={hosp:'\u{1F3E8}',aereo:'\u{2708}',carro:'\u{1F697}'};
+const MIGRATE={pendente:'solicitar',ok:'confirmado'};
 function todayStr(){return new Date().toISOString().slice(0,10)}
 function daysUntil(d){if(!d)return null;return Math.ceil((new Date(d+'T00:00:00')-new Date(new Date().toDateString()))/86400000)}
+function daysSince(d){if(!d)return null;return Math.floor((new Date(new Date().toDateString())-new Date(d+'T00:00:00'))/86400000)}
 function fmtDate(d){if(!d)return null;const[y,m,dd]=d.split('-');return dd+'/'+m+'/'+y}
 function dueClass(d,done){if(!d||done)return'';const n=daysUntil(d);return n<0?'overdue':n<=1?'soon':'ok'}
 function dueTxt(d,done){if(!d)return null;const n=daysUntil(d);if(done)return fmtDate(d);if(n<0)return'! '+fmtDate(d)+' ('+Math.abs(n)+'d)';if(n===0)return'hoje';if(n===1)return'amanha';return n<=3?fmtDate(d)+' ('+n+'d)':fmtDate(d)}
@@ -452,11 +526,23 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function pad(n){return String(n).padStart(2,'0')}
 // PERSIST
+function normalizeEvents(){
+  events.forEach(e=>{
+    ['hosp','aereo','carro'].forEach(f=>{
+      let v=e[f]||'na';
+      if(MIGRATE[v])v=MIGRATE[v];
+      if(TS_ALL.indexOf(v)<0)v='na';
+      e[f]=v;
+      if(!e[f+'Hist']||typeof e[f+'Hist']!=='object')e[f+'Hist']={};
+    });
+  });
+}
 function loadAll(){
   try{tasks=JSON.parse(localStorage.getItem(TASK_KEY))||[];}catch(e){tasks=[];}
   try{events=JSON.parse(localStorage.getItem(EVENT_KEY))||[];}catch(e){events=[];}
   try{costCenters=JSON.parse(localStorage.getItem(CC_KEY))||[];}catch(e){costCenters=[];}
   tasks.forEach(t=>{if(!t.status)t.status=t.done?'done':'todo';});
+  normalizeEvents();
 }
 function saveAll(){
   localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
@@ -497,12 +583,12 @@ function forcePull(){
   updateSyncStatus('Buscando...');
   fetch(syncUrl).then(r=>r.json()).then(remote=>{
     tasks=remote.tasks||[];events=remote.events||[];costCenters=remote.costCenters||[];
+    normalizeEvents();
     localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
     localStorage.setItem(EVENT_KEY,JSON.stringify(events));
     localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
     localStorage.setItem(UPDATED_KEY,String(remote.updatedAt||Date.now()));
-    renderTasks();renderCal();renderViagens();renderCostCenters();
-    if(selectedDate)renderDayPanel(selectedDate);
+    renderAll();
     updateSyncStatus('Dados da planilha aplicados neste aparelho.');
   }).catch(()=>updateSyncStatus('Erro ao buscar da planilha. Confira a URL e a publicacao do script.'));
 }
@@ -521,12 +607,12 @@ function syncNow(manual){
     const remoteUpdatedAt=Number(remote.updatedAt||0);
     if(remoteUpdatedAt>localUpdatedAt){
       tasks=remote.tasks||[];events=remote.events||[];costCenters=remote.costCenters||[];
+      normalizeEvents();
       localStorage.setItem(TASK_KEY,JSON.stringify(tasks));
       localStorage.setItem(EVENT_KEY,JSON.stringify(events));
       localStorage.setItem(CC_KEY,JSON.stringify(costCenters));
       localStorage.setItem(UPDATED_KEY,String(remoteUpdatedAt));
-      renderTasks();renderCal();renderViagens();renderCostCenters();
-      if(selectedDate)renderDayPanel(selectedDate);
+      renderAll();
       updateSyncStatus('Dados atualizados da planilha — '+new Date(remoteUpdatedAt).toLocaleString('pt-BR'));
     } else if(localUpdatedAt>remoteUpdatedAt){
       pushToRemote(()=>updateSyncStatus('Enviado para a planilha — '+new Date(localUpdatedAt).toLocaleString('pt-BR')));
@@ -536,6 +622,10 @@ function syncNow(manual){
   }).catch(()=>{
     if(manual)updateSyncStatus('Erro ao conectar. Confira a URL e se o script foi publicado como "qualquer pessoa com o link".');
   });
+}
+function renderAll(){
+  renderTasks();renderCal();renderViagens();renderCostCenters();
+  if(selectedDate)renderDayPanel(selectedDate);
 }
 // EXPORT / IMPORT
 function exportData(){
@@ -556,8 +646,8 @@ function importData(ev){
       if(data.tasks)tasks=data.tasks;
       if(data.events)events=data.events;
       if(data.costCenters)costCenters=data.costCenters;
-      saveAll();renderTasks();renderCal();renderViagens();renderCostCenters();
-      if(selectedDate)renderDayPanel(selectedDate);
+      normalizeEvents();
+      saveAll();renderAll();
       alert('Importado com sucesso!');
     }catch(err){alert('Erro ao ler o arquivo.');}
     ev.target.value='';
@@ -685,6 +775,11 @@ function toggleTripDetail(field){
   const detailEl=document.getElementById(field+'-detail');
   if(statusEl&&detailEl)detailEl.style.display=statusEl.value==='na'?'none':'block';
 }
+function fillStatusSelect(id,current){
+  const sel=document.getElementById(id);
+  sel.innerHTML=TS_ALL.map(s=>'<option value="'+s+'"'+(s===current?' selected':'')+'>'+TS_LABEL[s]+'</option>').join('');
+  sel.value=current||'na';
+}
 function resetEventModal(){
   document.getElementById('ev-text').value='';
   document.getElementById('ev-period').value='T';
@@ -696,9 +791,9 @@ function resetEventModal(){
   document.getElementById('ev-recur').value='none';
   document.getElementById('ev-recur-end').value='';
   document.getElementById('ev-recur-end-field').style.display='none';
-  document.getElementById('ev-hosp').value='na';
-  document.getElementById('ev-carro').value='na';
-  document.getElementById('ev-aereo').value='na';
+  fillStatusSelect('ev-hosp','na');
+  fillStatusSelect('ev-aereo','na');
+  fillStatusSelect('ev-carro','na');
   document.getElementById('ev-hosp-checkin').value='';
   document.getElementById('ev-hosp-checkout').value='';
   document.getElementById('ev-hosp-local').value='';
@@ -749,9 +844,9 @@ function openEditEvent(id){
   document.getElementById('ev-time-field').style.display=e.period==='H'?'grid':'none';
   document.getElementById('ev-obs').value=e.obs||'';
   document.getElementById('ev-location').value=e.location||'';
-  document.getElementById('ev-hosp').value=e.hosp||'na';
-  document.getElementById('ev-carro').value=e.carro||'na';
-  document.getElementById('ev-aereo').value=e.aereo||'na';
+  fillStatusSelect('ev-hosp',e.hosp||'na');
+  fillStatusSelect('ev-aereo',e.aereo||'na');
+  fillStatusSelect('ev-carro',e.carro||'na');
   const hd=e.hospDetail||{},ad=e.aereoDetail||{},cd=e.carroDetail||{};
   document.getElementById('ev-hosp-checkin').value=hd.checkin||'';
   document.getElementById('ev-hosp-checkout').value=hd.checkout||'';
@@ -817,15 +912,26 @@ function saveEvent(){
   }
   if(editEventId){
     const e=events.find(x=>x.id===editEventId);
-    if(e){e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;e.hosp=hosp;e.carro=carro;e.aereo=aereo;e.centro=centro;e.hospDetail=hospDetail;e.aereoDetail=aereoDetail;e.carroDetail=carroDetail;}
+    if(e){
+      ['hosp','aereo','carro'].forEach(f=>{
+        const nv={hosp:hosp,aereo:aereo,carro:carro}[f];
+        if(e[f]!==nv)stampHist(e,f,nv);
+      });
+      e.text=displayText;e.date=date;e.period=period;e.time=timeStart;e.timeEnd=timeEnd;e.timeLabel=timeLabel;e.location=location;e.obs=obs;e.hosp=hosp;e.carro=carro;e.aereo=aereo;e.centro=centro;e.hospDetail=hospDetail;e.aereoDetail=aereoDetail;e.carroDetail=carroDetail;
+    }
   } else {
-    const baseEv={id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,hospDetail,aereoDetail,carroDetail,recurGroup:null};
+    const stamp={};
+    ['hosp','aereo','carro'].forEach(f=>{
+      const v={hosp:hosp,aereo:aereo,carro:carro}[f];
+      stamp[f+'Hist']=(v&&v!=='na')?{[v]:todayStr()}:{};
+    });
+    const baseEv=Object.assign({id:Date.now(),date,period,time:timeStart,timeEnd,timeLabel,text:displayText,location,obs,hosp,carro,aereo,centro,hospDetail,aereoDetail,carroDetail,recurGroup:null},stamp);
     if(recur==='none'||!recurEnd){
       events.push(baseEv);
     } else {
       const groupId='grp-'+Date.now();
       const dates=generateDates(date,recur,recurEnd);
-      dates.forEach((d,i)=>{events.push(Object.assign({},baseEv,{id:Date.now()+i+1,date:d,recurGroup:groupId}));});
+      dates.forEach((d,i)=>{events.push(JSON.parse(JSON.stringify(Object.assign({},baseEv,{id:Date.now()+i+1,date:d,recurGroup:groupId}))));});
     }
   }
   document.getElementById('modal-event').style.display='none';
@@ -859,7 +965,18 @@ function deleteEvent(){if(editEventId)removeEvent(editEventId);document.getEleme
 document.getElementById('ev-text').addEventListener('keydown',e=>{if(e.key==='Enter')saveEvent()});
 // CALENDAR
 function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCal();}
-function dayHasPendingTrip(evs){return evs.some(e=>e.hosp==='pendente'||e.carro==='pendente'||e.aereo==='pendente');}
+function dayTripFlag(evs){
+  let amber=false;
+  for(const e of evs){
+    for(const f of ['hosp','aereo','carro']){
+      const st=e[f]||'na';
+      if(st==='na'||st==='confirmado')continue;
+      if(st==='solicitar'||tripIsLate(e,f))return 'red';
+      amber=true;
+    }
+  }
+  return amber?'amber':null;
+}
 function renderCal(){
   document.getElementById('month-label').textContent=MONTHS[calMonth]+' '+calYear;
   const first=new Date(calYear,calMonth,1).getDay();
@@ -877,20 +994,21 @@ function renderCal(){
 }
 function dayCell(ds,dayNum,otherMonth,td){
   const evs=eventsForDate(ds);
-  const pending=dayHasPendingTrip(evs);
+  const flag=dayTripFlag(evs);
   const cls=['cal-day',otherMonth?'other-month':'',ds===td?'today':''].filter(Boolean).join(' ');
   let evHTML=evs.slice(0,3).map(e=>'<div class="day-event '+periodClass(e)+'">'+esc(e.text)+'</div>').join('');
   if(evs.length>3)evHTML+='<div class="day-event" style="color:var(--muted)">+'+(evs.length-3)+'</div>';
-  return '<div class="'+cls+'" onclick="selectDay(\''+ds+'\')">'+(pending?'<div class="trip-dot" title="Pendencia de viagem"></div>':'')+'<div class="day-num">'+dayNum+'</div><div class="day-events">'+evHTML+'</div></div>';
+  return '<div class="'+cls+'" onclick="selectDay(\''+ds+'\')">'+(flag?'<div class="trip-dot '+flag+'" title="Logistica em aberto"></div>':'')+'<div class="day-num">'+dayNum+'</div><div class="day-events">'+evHTML+'</div></div>';
 }
 function selectDay(ds){selectedDate=ds;renderDayPanel(ds);}
 function tripBadgesHTML(e){
-  const items=[['hosp','Hospedagem'],['carro','Carro'],['aereo','Aereo']];
   let html='';
-  items.forEach(([k,label])=>{
-    const v=e[k];
-    if(v==='pendente')html+='<span class="badge badge-pend">'+label+' pendente</span>';
-    else if(v==='ok')html+='<span class="badge badge-ok">'+label+' OK</span>';
+  TRIP_FIELDS.forEach(([k,label])=>{
+    const v=e[k]||'na';
+    if(v==='na')return;
+    const late=tripIsLate(e,k);
+    html+='<span class="st-chip '+TS_CLASS[v]+'">'+TRIP_ICON[k]+' '+TS_SHORT[v]+'</span>';
+    if(late)html+='<span class="st-late">!</span>';
   });
   return html;
 }
@@ -915,7 +1033,7 @@ function renderDayPanel(ds){
           '<span class="dp-period '+f+'">'+pl+'</span>'+
           '<span class="dp-text">'+esc(e.text)+' '+timeBadge+locBadge+recurBadge+
           (e.obs?'<div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4">'+esc(e.obs)+'</div>':'')+
-          ((tripB||centroBadge)?'<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">'+tripB+centroBadge+'</div>':'')+
+          ((tripB||centroBadge)?'<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;align-items:center">'+tripB+centroBadge+'</div>':'')+
           '</span>'+
           '<div class="dp-actions">'+
             '<button class="dp-btn edit" onclick="openEditEvent('+e.id+')" title="Editar">&#9998;</button>'+
@@ -934,6 +1052,10 @@ function renderDayPanel(ds){
   panel.style.display='block';
 }
 // CENTROS DE CUSTO
+function toggleCCPanel(){
+  const p=document.getElementById('cc-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
 function renderCostCenters(){
   const list=document.getElementById('cc-list');
   list.innerHTML=costCenters.length?costCenters.map((cc,i)=>
@@ -978,118 +1100,274 @@ function handleCentroChange(){
   }
 }
 document.getElementById('new-cc').addEventListener('keydown',e=>{if(e.key==='Enter')addCostCenter()});
-// VIAGENS
+/* ================= VIAGENS / LOGISTICA ================= */
+function stampHist(e,f,newStatus){
+  if(!e[f+'Hist'])e[f+'Hist']={};
+  if(newStatus&&newStatus!=='na')e[f+'Hist'][newStatus]=todayStr();
+}
+function tripAging(e,f){
+  const st=e[f]||'na';
+  if(st!=='solicitado'&&st!=='aprovacao')return null;
+  const h=e[f+'Hist']||{};
+  if(!h[st])return null;
+  const d=daysSince(h[st]);
+  return {days:d,late:d>SLA[st],since:h[st]};
+}
+function tripIsLate(e,f){
+  const st=e[f]||'na';
+  if(st==='na'||st==='confirmado')return false;
+  const ag=tripAging(e,f);
+  if(ag&&ag.late)return true;
+  const du=daysUntil(e.date);
+  if(du<0)return true;
+  if(st==='solicitar'&&du<=LEAD_ALERT)return true;
+  return false;
+}
+function lateReason(e,f){
+  const st=e[f]||'na';
+  const ag=tripAging(e,f);
+  const du=daysUntil(e.date);
+  if(du<0)return 'viagem ja passou sem confirmar';
+  if(ag&&ag.late)return (st==='solicitado'?'sem retorno ha ':'em aprovacao ha ')+ag.days+'d';
+  if(st==='solicitar'&&du<=LEAD_ALERT)return 'faltam '+du+'d e nao foi solicitado';
+  return 'atrasado';
+}
+function tripItems(){
+  const out=[];
+  events.forEach(e=>{
+    ['hosp','aereo','carro'].forEach(f=>{
+      const st=e[f]||'na';
+      if(st==='na')return;
+      out.push({ev:e,field:f,status:st,late:tripIsLate(e,f),aging:tripAging(e,f)});
+    });
+  });
+  out.sort((a,b)=>a.ev.date.localeCompare(b.ev.date));
+  return out;
+}
+function filterTripItems(items){
+  if(vfilter==='abertas')return items.filter(i=>i.status!=='confirmado');
+  if(vfilter==='atrasadas')return items.filter(i=>i.late);
+  if(vfilter==='proximas')return items.filter(i=>{const d=daysUntil(i.ev.date);return d>=0&&d<=30;});
+  if(vfilter==='confirmadas')return items.filter(i=>i.status==='confirmado');
+  return items;
+}
 function setVFilter(f,btn){vfilter=f;document.querySelectorAll('#viagens-filters .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderViagens();}
+function setVView(v){
+  vview=v;
+  document.getElementById('viagens-kanban').style.display=v==='kanban'?'block':'none';
+  document.getElementById('viagens-matriz').style.display=v==='matriz'?'block':'none';
+  document.getElementById('btn-vkanban').classList.toggle('active',v==='kanban');
+  document.getElementById('btn-vmatriz').classList.toggle('active',v==='matriz');
+  renderViagens();
+}
 function updateTripField(id,field,value){
   const e=events.find(x=>x.id===id);if(!e)return;
-  e[field]=value;saveAll();renderViagens();renderCal();if(selectedDate)renderDayPanel(selectedDate);
+  if(e[field]!==value)stampHist(e,field,value);
+  e[field]=value;
+  saveAll();renderViagens();renderCal();if(selectedDate)renderDayPanel(selectedDate);
 }
-function tripSelectHTML(e,field,label){
-  const v=e[field]||'na';
-  return '<div style="display:flex;flex-direction:column;gap:3px">'+
-    '<label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">'+label+'</label>'+
-    '<select onchange="updateTripField('+e.id+',\''+field+'\',this.value)" style="height:32px;padding:0 8px;border:0.5px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:12px">'+
-      '<option value="na"'+(v==='na'?' selected':'')+'>N/A</option>'+
-      '<option value="pendente"'+(v==='pendente'?' selected':'')+'>Pendente</option>'+
-      '<option value="ok"'+(v==='ok'?' selected':'')+'>OK</option>'+
-    '</select></div>';
+function advanceTrip(id,field){
+  const e=events.find(x=>x.id===id);if(!e)return;
+  const idx=FLOW.indexOf(e[field]);
+  const next=idx<0?FLOW[0]:(idx>=FLOW.length-1?FLOW[FLOW.length-1]:FLOW[idx+1]);
+  updateTripField(id,field,next);
 }
-function cardViagemHTML(e){
-  const overdue=daysUntil(e.date)<0;
-  const dt=fmtDate(e.date);
-  const selects=tripSelectHTML(e,'hosp','Hospedagem')+tripSelectHTML(e,'carro','Carro')+tripSelectHTML(e,'aereo','Aereo');
-  return '<div class="task-card '+(overdue?'overdue':'')+'" style="flex-direction:column;align-items:stretch;gap:8px">'+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'+
-      '<div><div class="task-title">'+esc(e.text)+'</div><div class="task-meta"><span class="due-tag '+(overdue?'overdue':'ok')+'">'+dt+'</span>'+(e.location?'<span class="date-hint">'+esc(e.location)+'</span>':'')+(e.centro?'<span class="cc-tag">'+esc(e.centro)+'</span>':'')+'</div></div>'+
-      '<div class="task-actions" style="opacity:1"><button class="icon-btn edit" onclick="openEditEvent('+e.id+')" title="Editar">&#9998;</button></div>'+
+function tripDetailLine(e,f){
+  if(f==='hosp'){
+    const d=e.hospDetail||{};
+    const local=d.local||e.location||'';
+    const per=(d.checkin?fmtDate(d.checkin):'')+(d.checkout?' a '+fmtDate(d.checkout):'');
+    return [local,per].filter(Boolean).join(' — ');
+  }
+  if(f==='aereo'){
+    const d=e.aereoDetail||{};
+    const tr=(d.origem||d.destino)?((d.origem||'?')+' → '+(d.destino||'?')):'';
+    const per=(d.ida?fmtDate(d.ida):'')+(d.volta?' / '+fmtDate(d.volta):'');
+    return [tr,per].filter(Boolean).join(' — ');
+  }
+  const d=e.carroDetail||{};
+  const local=d.local||e.location||'';
+  const per=(d.retirada?fmtDate(d.retirada):'')+(d.devolucao?' a '+fmtDate(d.devolucao):'');
+  return [local,per].filter(Boolean).join(' — ');
+}
+function tripCardHTML(it){
+  const e=it.ev,f=it.field;
+  const du=daysUntil(e.date);
+  const dueCls=du<0?'overdue':(du<=7?'soon':'ok');
+  const detail=tripDetailLine(e,f);
+  const ag=it.aging;
+  const agTxt=(ag&&!it.late)?('ha '+ag.days+'d'):'';
+  const canAdvance=it.status!=='confirmado';
+  return '<div class="trip-card '+(it.late?'late':'')+'" id="trip-'+e.id+'-'+f+'" draggable="true" ondragstart="onTripDragStart(event,'+e.id+',\''+f+'\')" ondragend="onTripDragEnd()">'+
+    '<div class="trip-head"><span class="trip-type">'+TRIP_ICON[f]+' '+TRIP_LABEL[f].toUpperCase()+'</span>'+
+      (it.late?'<span class="st-late" title="'+escAttr(lateReason(e,f))+'">! '+esc(lateReason(e,f))+'</span>':'')+
     '</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+selects+'</div>'+
+    '<div class="trip-title">'+esc(e.text)+'</div>'+
+    (detail?'<div class="trip-sub">'+esc(detail)+'</div>':'')+
+    '<div class="trip-foot">'+
+      '<span class="due-tag '+dueCls+'">'+fmtDate(e.date)+'</span>'+
+      (e.centro?'<span class="cc-tag">'+esc(e.centro)+'</span>':'<span class="cc-tag" style="color:#791f1f">sem centro de custo</span>')+
+      (agTxt?'<span class="date-hint">'+agTxt+'</span>':'')+
+      '<span class="trip-btns">'+
+        (canAdvance?'<button class="icon-btn edit" title="Avancar status" onclick="advanceTrip('+e.id+',\''+f+'\')">&rarr;</button>':'')+
+        '<button class="icon-btn edit" title="Editar evento" onclick="openEditEvent('+e.id+')">&#9998;</button>'+
+      '</span>'+
+    '</div>'+
   '</div>';
 }
-function renderViagens(){
-  const relevant=events.filter(e=>(e.hosp&&e.hosp!=='na')||(e.carro&&e.carro!=='na')||(e.aereo&&e.aereo!=='na'));
-  const pending=relevant.filter(e=>e.hosp==='pendente'||e.carro==='pendente'||e.aereo==='pendente');
-  const overdue=pending.filter(e=>daysUntil(e.date)<0);
-  document.getElementById('v-total').textContent=relevant.length;
-  document.getElementById('v-pend').textContent=pending.length;
-  document.getElementById('v-overdue').textContent=overdue.length;
-  let list;
-  if(vfilter==='pendentes')list=pending;
-  else if(vfilter==='resolvidas')list=relevant.filter(e=>!pending.includes(e));
-  else if(vfilter==='vencidas')list=overdue;
-  else list=relevant;
-  list=[...list].sort((a,b)=>a.date.localeCompare(b.date));
-  document.getElementById('viagens-list').innerHTML=list.length?list.map(cardViagemHTML).join(''):'<div class="empty-list">Nenhuma viagem com logistica marcada aqui</div>';
+function onTripDragStart(ev,id,field){
+  dragTrip={id,field};
+  setTimeout(()=>{const el=document.getElementById('trip-'+id+'-'+field);if(el)el.classList.add('dragging');},0);
+  ev.dataTransfer.effectAllowed='move';
 }
-function buildViagensResumo(){
-  const pending=events.filter(e=>e.hosp==='pendente'||e.carro==='pendente'||e.aereo==='pendente');
-  const itemLabel={hosp:'Hospedagem',carro:'Aluguel de carro',aereo:'Aereo'};
-  if(!pending.length)return 'Pendencias de viagem — '+fmtDate(todayStr())+'\n\nNenhuma pendencia no momento. Tudo certo por aqui.';
-  pending.sort((a,b)=>a.date.localeCompare(b.date));
-  const groups={};
-  pending.forEach(e=>{
-    const key=e.centro&&e.centro.trim()?e.centro.trim():'Sem centro de custo';
-    if(!groups[key])groups[key]=[];
-    groups[key].push(e);
+function onTripDragEnd(){
+  if(dragTrip){const el=document.getElementById('trip-'+dragTrip.id+'-'+dragTrip.field);if(el)el.classList.remove('dragging');}
+}
+function onTripDrop(ev,status){
+  ev.preventDefault();ev.currentTarget.classList.remove('drag-over');
+  if(dragTrip){updateTripField(dragTrip.id,dragTrip.field,status);dragTrip=null;}
+}
+function renderViagens(){
+  const all=tripItems();
+  document.getElementById('v-total').textContent=all.length;
+  document.getElementById('v-solicitar').textContent=all.filter(i=>i.status==='solicitar').length;
+  document.getElementById('v-solicitado').textContent=all.filter(i=>i.status==='solicitado').length;
+  document.getElementById('v-aprovacao').textContent=all.filter(i=>i.status==='aprovacao').length;
+  const lateN=all.filter(i=>i.late).length;
+  document.getElementById('v-atraso').textContent=lateN;
+  const badge=document.getElementById('nav-badge-viagens');
+  const openN=all.filter(i=>i.status!=='confirmado').length;
+  badge.textContent=openN;badge.classList.toggle('zero',openN===0);
+  badge.style.background=lateN?'#c0392b':'#7a7870';
+  document.getElementById('lg-sla1').textContent=SLA.solicitado;
+  document.getElementById('lg-sla2').textContent=SLA.aprovacao;
+  document.getElementById('lg-sla3').textContent=LEAD_ALERT;
+  const list=filterTripItems(all);
+  if(vview==='kanban')renderViagensKanban(list);
+  else renderViagensMatriz(list);
+}
+function renderViagensKanban(list){
+  let html='';
+  FLOW.forEach(st=>{
+    const items=list.filter(i=>i.status===st);
+    html+='<div class="k-col" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onTripDrop(event,\''+st+'\')">'+
+      '<div class="k-col-header"><span class="k-col-title">'+TS_LABEL[st]+'</span><span class="k-count">'+items.length+'</span></div>'+
+      '<div class="k-col-bar" style="background:'+TS_BAR[st]+'"></div>'+
+      '<div class="k-cards">'+(items.length?items.map(tripCardHTML).join(''):'<div class="empty-col">-</div>')+'</div>'+
+    '</div>';
   });
-  let txt='*Pendencias de viagem* — '+fmtDate(todayStr());
-  txt+='\nTotal: '+pending.length+' pendencia(s)';
-  Object.keys(groups).sort().forEach(key=>{
-    txt+='\n\n*'+key+'*';
-    groups[key].forEach(e=>{
-      const items=['hosp','carro','aereo'].filter(k=>e[k]==='pendente').map(k=>itemLabel[k]);
-      const overdue=daysUntil(e.date)<0;
-      const dateTxt=fmtDate(e.date)+(overdue?' (vencida)':'');
-      const loc=e.location?' - '+e.location:'';
-      txt+='\n- '+dateTxt+' | '+e.text+loc+'\n  Pendente: '+items.join(', ');
+  document.getElementById('viagens-kanban-cols').innerHTML=html;
+}
+function statusSelectHTML(e,f){
+  const v=e[f]||'na';
+  return '<select class="st-sel '+TS_CLASS[v]+'" onchange="updateTripField('+e.id+',\''+f+'\',this.value)">'+
+    TS_ALL.map(s=>'<option value="'+s+'"'+(s===v?' selected':'')+'>'+TS_SHORT[s]+'</option>').join('')+
+  '</select>';
+}
+function cellHTML(e,f){
+  const v=e[f]||'na';
+  let ag='';
+  if(v!=='na'&&v!=='confirmado'){
+    if(tripIsLate(e,f))ag='<span class="mz-aging late">! '+esc(lateReason(e,f))+'</span>';
+    else{const a=tripAging(e,f);if(a)ag='<span class="mz-aging">ha '+a.days+'d</span>';}
+  }
+  return '<td class="mz-cell">'+statusSelectHTML(e,f)+ag+'</td>';
+}
+function renderViagensMatriz(list){
+  const seen={},rows=[];
+  list.forEach(i=>{if(!seen[i.ev.id]){seen[i.ev.id]=true;rows.push(i.ev);}});
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  let html='<thead><tr><th>Data</th><th>Evento</th><th>Hospedagem</th><th>Aereo</th><th>Carro</th><th></th></tr></thead><tbody>';
+  if(!rows.length){
+    html+='<tr><td colspan="6"><div class="empty-list">Nada neste filtro</div></td></tr>';
+  } else {
+    rows.forEach(e=>{
+      const late=['hosp','aereo','carro'].some(f=>tripIsLate(e,f));
+      const du=daysUntil(e.date);
+      html+='<tr class="'+(late?'late-row':'')+'">'+
+        '<td class="mz-date">'+fmtDate(e.date)+'<div class="mz-sub">'+(du<0?Math.abs(du)+'d atras':du===0?'hoje':'em '+du+'d')+'</div></td>'+
+        '<td><div class="mz-ev">'+esc(e.text)+'</div><div class="mz-sub">'+esc(e.location||'')+(e.centro?(e.location?' · ':'')+esc(e.centro):'')+'</div></td>'+
+        cellHTML(e,'hosp')+cellHTML(e,'aereo')+cellHTML(e,'carro')+
+        '<td><button class="icon-btn edit" title="Editar evento" onclick="openEditEvent('+e.id+')">&#9998;</button></td>'+
+      '</tr>';
+    });
+  }
+  html+='</tbody>';
+  document.getElementById('matriz-table').innerHTML=html;
+}
+/* ===== TEXTOS WHATSAPP ===== */
+function buildSolicitacaoLogistica(){
+  const items=tripItems().filter(i=>i.status==='solicitar');
+  if(!items.length)return 'Nenhum item com status "A solicitar" no momento.';
+  let txt='*Solicitacao de logistica de viagem*\n'+fmtDate(todayStr())+'  |  '+items.length+' item(ns)';
+  ['hosp','aereo','carro'].forEach(f=>{
+    const sub=items.filter(i=>i.field===f);
+    if(!sub.length)return;
+    txt+='\n\n*'+TRIP_LABEL[f]+'*';
+    sub.forEach(i=>{
+      const e=i.ev;
+      if(f==='hosp'){
+        const d=e.hospDetail||{};
+        const local=d.local||e.location||e.text;
+        const periodo=(d.checkin?fmtDate(d.checkin):'?')+' a '+(d.checkout?fmtDate(d.checkout):'?');
+        txt+='\n- '+local+' — '+periodo;
+      } else if(f==='aereo'){
+        const d=e.aereoDetail||{};
+        let datas='Ida '+(d.ida?fmtDate(d.ida):'?');
+        if(d.volta)datas+=' / Volta '+fmtDate(d.volta);
+        txt+='\n- '+(d.origem||'?')+' -> '+(d.destino||'?')+' — '+datas;
+      } else {
+        const d=e.carroDetail||{};
+        const local=d.local||e.location||e.text;
+        const ret=(d.retirada?fmtDate(d.retirada):'?')+(d.retiradaHora?' '+d.retiradaHora:'');
+        const dev=(d.devolucao?fmtDate(d.devolucao):'?')+(d.devolucaoHora?' '+d.devolucaoHora:'');
+        txt+='\n- '+local+' — '+ret+' a '+dev;
+      }
+      txt+='\n  Compromisso: '+e.text+' ('+fmtDate(e.date)+')';
+      txt+='\n  Centro de custo: '+(e.centro||'A DEFINIR');
+      const det=(f==='hosp'?(e.hospDetail||{}):f==='aereo'?(e.aereoDetail||{}):(e.carroDetail||{}));
+      if(det.obs)txt+='\n  Obs: '+det.obs;
     });
   });
   return txt;
 }
-function buildSolicitacaoLogistica(){
-  const hospList=events.filter(e=>e.hosp==='pendente').sort((a,b)=>a.date.localeCompare(b.date));
-  const aereoList=events.filter(e=>e.aereo==='pendente').sort((a,b)=>a.date.localeCompare(b.date));
-  const carroList=events.filter(e=>e.carro==='pendente').sort((a,b)=>a.date.localeCompare(b.date));
-  if(!hospList.length&&!aereoList.length&&!carroList.length){
-    return 'Nenhuma solicitacao de logistica pendente no momento.';
-  }
-  let txt='*Solicitacao de logistica de viagem*';
-  if(hospList.length){
-    txt+='\n\n*Hospedagem*';
-    hospList.forEach(e=>{
-      const d=e.hospDetail||{};
-      const local=d.local||e.location||e.text;
-      const periodo=(d.checkin?fmtDate(d.checkin):'?')+' a '+(d.checkout?fmtDate(d.checkout):'?');
-      txt+='\n- '+local+' — '+periodo;
-      if(e.centro)txt+='\n  Centro de custo: '+e.centro;
-      if(d.obs)txt+='\n  Obs: '+d.obs;
+function markAllAsSolicitado(){
+  const items=tripItems().filter(i=>i.status==='solicitar');
+  if(!items.length)return;
+  if(!confirm('Marcar os '+items.length+' item(ns) como "Solicitado" com a data de hoje?'))return;
+  items.forEach(i=>{stampHist(i.ev,i.field,'solicitado');i.ev[i.field]='solicitado';});
+  saveAll();renderViagens();renderCal();if(selectedDate)renderDayPanel(selectedDate);
+  document.getElementById('solicitacao-preview').textContent=buildSolicitacaoLogistica();
+}
+function buildViagensResumo(){
+  const items=tripItems().filter(i=>i.status!=='confirmado');
+  if(!items.length)return 'Status de logistica — '+fmtDate(todayStr())+'\n\nTudo confirmado. Nenhuma pendencia.';
+  const lateItems=items.filter(i=>i.late);
+  let txt='*Status de logistica de viagem* — '+fmtDate(todayStr());
+  txt+='\nEm aberto: '+items.length+'  |  Em atraso: '+lateItems.length;
+  const groups={};
+  items.forEach(i=>{
+    const key=(i.ev.centro&&i.ev.centro.trim())?i.ev.centro.trim():'Sem centro de custo';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(i);
+  });
+  Object.keys(groups).sort().forEach(key=>{
+    txt+='\n\n*'+key+'*';
+    const byEvent={};
+    groups[key].forEach(i=>{
+      const k=i.ev.id;
+      if(!byEvent[k])byEvent[k]={ev:i.ev,items:[]};
+      byEvent[k].items.push(i);
     });
-  }
-  if(aereoList.length){
-    txt+='\n\n*Aereo*';
-    aereoList.forEach(e=>{
-      const d=e.aereoDetail||{};
-      const trecho=(d.origem||'?')+' -> '+(d.destino||'?');
-      let datas='Ida '+(d.ida?fmtDate(d.ida):'?');
-      if(d.volta)datas+=' / Volta '+fmtDate(d.volta);
-      txt+='\n- '+trecho+' — '+datas;
-      if(e.centro)txt+='\n  Centro de custo: '+e.centro;
-      if(d.obs)txt+='\n  Obs: '+d.obs;
+    Object.values(byEvent).sort((a,b)=>a.ev.date.localeCompare(b.ev.date)).forEach(g=>{
+      const loc=g.ev.location?' - '+g.ev.location:'';
+      txt+='\n- '+fmtDate(g.ev.date)+' | '+g.ev.text+loc;
+      g.items.forEach(i=>{
+        const ag=i.aging?' (ha '+i.aging.days+'d)':'';
+        txt+='\n  '+TRIP_LABEL[i.field]+': '+TS_LABEL[i.status]+ag+(i.late?' ⚠ '+lateReason(i.ev,i.field):'');
+      });
     });
-  }
-  if(carroList.length){
-    txt+='\n\n*Aluguel de carro*';
-    carroList.forEach(e=>{
-      const d=e.carroDetail||{};
-      const local=d.local||e.location||e.text;
-      const retiradaTxt=(d.retirada?fmtDate(d.retirada):'?')+(d.retiradaHora?' '+d.retiradaHora:'');
-      const devolucaoTxt=(d.devolucao?fmtDate(d.devolucao):'?')+(d.devolucaoHora?' '+d.devolucaoHora:'');
-      const periodo=retiradaTxt+' a '+devolucaoTxt;
-      txt+='\n- '+local+' — '+periodo;
-      if(e.centro)txt+='\n  Centro de custo: '+e.centro;
-      if(d.obs)txt+='\n  Obs: '+d.obs;
-    });
-  }
+  });
   return txt;
 }
 function openSolicitacaoModal(){
@@ -1098,13 +1376,13 @@ function openSolicitacaoModal(){
 }
 function copySolicitacao(){
   const txt=buildSolicitacaoLogistica();
+  const btn=event.target;
   navigator.clipboard.writeText(txt).then(()=>{
-    const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
+    btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
   }).catch(()=>alert(txt));
 }
 function sendSolicitacao(){
-  const txt=buildSolicitacaoLogistica();
-  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  window.open('https://wa.me/?text='+encodeURIComponent(buildSolicitacaoLogistica()),'_blank');
 }
 function openViagensResumoModal(){
   document.getElementById('viagens-resumo-preview').textContent=buildViagensResumo();
@@ -1112,13 +1390,13 @@ function openViagensResumoModal(){
 }
 function copyViagensResumo(){
   const txt=buildViagensResumo();
+  const btn=event.target;
   navigator.clipboard.writeText(txt).then(()=>{
-    const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
+    btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
   }).catch(()=>alert(txt));
 }
 function sendViagensResumo(){
-  const txt=buildViagensResumo();
-  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  window.open('https://wa.me/?text='+encodeURIComponent(buildViagensResumo()),'_blank');
 }
 // SEED
 (function(){
@@ -1202,9 +1480,8 @@ function openResumoModal(){
 function updateResumoPreview(){
   document.getElementById('resumo-preview').textContent=buildResumo();
 }
-// attach listeners after DOM ready
 setTimeout(()=>{
-  ['resumo-date','resumo-tasks','resumo-agenda','resumo-obs','resumo-vencidas'].forEach(id=>{
+  ['resumo-date','resumo-tasks','resumo-agenda','resumo-obs','resumo-vencidas','resumo-logistica'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.addEventListener('change',updateResumoPreview);
   });
@@ -1216,6 +1493,7 @@ function buildResumo(){
   const inclAgenda=document.getElementById('resumo-agenda').checked;
   const inclObs=document.getElementById('resumo-obs').checked;
   const inclVencidas=document.getElementById('resumo-vencidas').checked;
+  const inclLog=document.getElementById('resumo-logistica').checked;
   const [y,m,d]=ds.split('-');
   const dt=new Date(ds+'T12:00:00');
   const DOWS_full=['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'];
@@ -1247,25 +1525,34 @@ function buildResumo(){
       evs.forEach(e=>{
         const loc=e.location?' ('+e.location+')':'';
         const obs3=inclObs&&e.obs?'\n  > '+e.obs:'';
-        const trip=tripBadgesHTML(e);
-        const tripTxt=trip?(' ['+['hosp','carro','aereo'].filter(k=>e[k]==='pendente').map(k=>({hosp:'Hospedagem',carro:'Carro',aereo:'Aereo'}[k])).join(', ')+' pendente]'):'';
-        txt+='\n'+( pname[e.period]||e.period)+' - '+e.text+loc+(['hosp','carro','aereo'].some(k=>e[k]==='pendente')?tripTxt:'')+obs3;
+        const open=['hosp','aereo','carro'].filter(k=>e[k]&&e[k]!=='na'&&e[k]!=='confirmado');
+        const tripTxt=open.length?' ['+open.map(k=>TRIP_LABEL[k]+': '+TS_SHORT[e[k]]).join(', ')+']':'';
+        txt+='\n'+( pname[e.period]||e.period)+' - '+e.text+loc+tripTxt+obs3;
       });
     } else { txt+='\nSem eventos'; }
+  }
+  if(inclLog){
+    const items=tripItems().filter(i=>i.status!=='confirmado');
+    txt+='\n\n*LOGISTICA EM ABERTO*';
+    if(items.length){
+      items.slice(0,15).forEach(i=>{
+        txt+='\n- '+fmtDate(i.ev.date)+' | '+TRIP_LABEL[i.field]+' — '+i.ev.text+': '+TS_LABEL[i.status]+(i.late?' ⚠':'');
+      });
+      if(items.length>15)txt+='\n(+'+(items.length-15)+' itens)';
+    } else { txt+='\nTudo confirmado'; }
   }
   return txt;
 }
 function copyResumo(){
   const txt=buildResumo();
+  const btn=event.target;
   navigator.clipboard.writeText(txt).then(()=>{
-    const btn=event.target;btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
+    btn.textContent='Copiado!';setTimeout(()=>btn.textContent='\u{1F4CB} Copiar',1500);
   }).catch(()=>alert(txt));
 }
 function sendResumo(){
-  const txt=buildResumo();
-  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  window.open('https://wa.me/?text='+encodeURIComponent(buildResumo()),'_blank');
 }
-function sendWhatsApp(){}
 // AUTO CLEANUP: remove done tasks older than 7 days
 function cleanOldDone(){
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
@@ -1303,6 +1590,9 @@ if(syncUrl)syncNow(false);
         </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
           <input type="checkbox" id="resumo-agenda" checked style="width:16px;height:16px"/> Agenda do dia
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+          <input type="checkbox" id="resumo-logistica" style="width:16px;height:16px"/> Logistica em aberto
         </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
           <input type="checkbox" id="resumo-obs" checked style="width:16px;height:16px"/> Incluir observacoes
@@ -1347,9 +1637,11 @@ if(syncUrl)syncNow(false);
 </div>
 <!-- SOLICITACAO LOGISTICA MODAL -->
 <div class="overlay" id="modal-solicitacao" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:440px">
     <h3>&#128241; Solicitar logistica de viagem</h3>
-    <div id="solicitacao-preview" style="background:var(--col-bg);border-radius:var(--rs);padding:12px;font-size:12px;font-family:'DM Mono',monospace;white-space:pre-wrap;line-height:1.6;max-height:340px;overflow-y:auto;margin-bottom:4px;color:var(--text)"></div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:10px">Monta o texto com tudo que esta em <strong>&ldquo;A solicitar&rdquo;</strong>. Depois de enviar, use o botao abaixo para mover esses itens para &ldquo;Solicitado&rdquo; com a data de hoje.</div>
+    <div id="solicitacao-preview" style="background:var(--col-bg);border-radius:var(--rs);padding:12px;font-size:12px;font-family:'DM Mono',monospace;white-space:pre-wrap;line-height:1.6;max-height:300px;overflow-y:auto;margin-bottom:10px;color:var(--text)"></div>
+    <button class="btn-ghost" style="width:100%;margin-bottom:4px" onclick="markAllAsSolicitado()">&#10003; Marcar tudo como "Solicitado" (hoje)</button>
     <div class="mactions">
       <button class="btn-ghost" onclick="document.getElementById('modal-solicitacao').style.display='none'">Fechar</button>
       <div class="mactions-right">
@@ -1361,8 +1653,8 @@ if(syncUrl)syncNow(false);
 </div>
 <!-- VIAGENS RESUMO MODAL -->
 <div class="overlay" id="modal-viagens-resumo" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px">
-    <h3>&#128203; Relatorio de pendencias de viagem</h3>
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:440px">
+    <h3>&#128203; Status de logistica</h3>
     <div id="viagens-resumo-preview" style="background:var(--col-bg);border-radius:var(--rs);padding:12px;font-size:12px;font-family:'DM Mono',monospace;white-space:pre-wrap;line-height:1.6;max-height:340px;overflow-y:auto;margin-bottom:4px;color:var(--text)"></div>
     <div class="mactions">
       <button class="btn-ghost" onclick="document.getElementById('modal-viagens-resumo').style.display='none'">Fechar</button>
